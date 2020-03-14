@@ -1,5 +1,8 @@
 package gui;
 
+import lexer.Lexer;
+import lexer.Token;
+
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
@@ -9,13 +12,13 @@ public class Gui {
     private JMenuBar menuBar;   // 菜单栏
     private TextArea textArea;  // 文字区
     private JMenu fileMenu, lexerMenu, parserMenu;  // 一级菜单项
-    private JMenuItem openItem, saveItem, exitItem; // 二级菜单项
+    private JMenuItem openItem, saveItem, exitItem, dfaItem, tokenItem; // 二级菜单项
 
     private FileDialog openDialog, saveDialog;      // 文件对话框
     private File file = null;                       // 打开的文件
 
     private Font font1 = new Font("Consolas", Font.PLAIN, 16);  // 字体
-    private Font font2 = new Font("Consolas", Font.BOLD, 18);
+    private Font font2 = new Font("Consolas", Font.PLAIN, 18);
 
     public Gui() {
         jFrame = new JFrame("Compiler");
@@ -55,6 +58,16 @@ public class Gui {
         fileMenu.addSeparator();
         fileMenu.add(exitItem);
 
+        // 为"Lexer"菜单项设置按钮
+        dfaItem = new JMenuItem("Dfa");
+        tokenItem = new JMenuItem("Token");
+
+        // 为"Lexer"设置监听
+        lexerMenuEvent();
+
+        lexerMenu.add(dfaItem);
+        lexerMenu.add(tokenItem);
+
         // 添加菜单项到menubar
         menuBar.add(fileMenu);
         menuBar.add(lexerMenu);
@@ -68,6 +81,23 @@ public class Gui {
 
         // frame可见
         jFrame.setVisible(true);
+    }
+
+    private void lexerMenuEvent() {
+        // 打印输出dfa转换表
+        dfaItem.addActionListener(e -> {
+
+        });
+
+        // 打印输出token序列
+        tokenItem.addActionListener(e -> {
+            textArea.setText(null);
+            Lexer lexer = new Lexer(file.getAbsolutePath());
+            for (Token token : lexer.getTokens()) {
+                textArea.append(token.toString()+"\n");
+                System.out.println(token.toString());
+            }
+        });
     }
 
     private void fileMenuEvent() {
