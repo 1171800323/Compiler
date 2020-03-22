@@ -25,11 +25,11 @@ public class Lexer {
                 System.out.println(c);
             }
         }
-        tokens.add(new Num(1));
-        tokens.add(new Real((float) 2.1));
-        tokens.add(new Word("num", Tag.ID));
-        tokens.add(new Token(Tag.SUB));
-        tokens.add(new Token(Tag.INC));
+//        tokens.add(new Num(1));
+//        tokens.add(new Real((float) 2.1));
+//        tokens.add(new Word("num", Tag.ID));
+//        tokens.add(new Token(Tag.SUB));
+//        tokens.add(new Token(Tag.INC));
     }
 
     private void readFile(String filename) {

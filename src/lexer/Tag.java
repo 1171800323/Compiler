@@ -2,10 +2,11 @@ package lexer;
 
 enum Tag {
     ID,
-    INT, FLOAT, STRING, STRUCT, BOOL,
+    INT, FLOAT, CHAR, STRUCT, BOOL,
     TRUE, FALSE,
     NUM, REAL, WORDS,
-    IF, ELSE, DO, WHILE, FOR, BREAK, RETURN,
+    IF, ELSE, DO, WHILE, FOR, BREAK, CONTINUE,
+    PROC, CALL, RETURN,
     AND, OR, NOT,                    // "&&","||","!"
     EQ, NE, LE, GE, GT, LT,          // "==","!=","<=",">=",">","<"
     ADD, SUB, MUL, DIV, REMAIN,      // "+","-","*","/","%"
