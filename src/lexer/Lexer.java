@@ -23,6 +23,7 @@ public class Lexer {
             for (int i = 0; i < string.length(); i++){
                 char c = string.charAt(i);
                 System.out.println(c);
+
             }
         }
 //        tokens.add(new Num(1));
