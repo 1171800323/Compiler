@@ -11,6 +11,7 @@ public class Lexer {
 
     private final List<Row> lines = new ArrayList<>();
     private final List<Token> tokens = new ArrayList<>();
+    private final Graph graph = new Graph("src/dfa.txt");
 
     public Lexer(String filename) {
         readFile(filename);
@@ -18,19 +19,19 @@ public class Lexer {
     }
 
     private void findTokens() {
+        int s = 1;
         for (Row row : lines) {
             String string = row.getLine();
-            for (int i = 0; i < string.length(); i++){
+            for (int i = 0; i < string.length(); i++) {
                 char c = string.charAt(i);
-                System.out.println(c);
-
+                s = graph.getTarget(s, c);
+                System.out.println(s);
+                if (graph.getEndStates().keySet().contains(s)){
+                    tokens.add(new Word("INT",graph.getEndStates().get(s)));
+                    s = 1;
+                }
             }
         }
-//        tokens.add(new Num(1));
-//        tokens.add(new Real((float) 2.1));
-//        tokens.add(new Word("num", Tag.ID));
-//        tokens.add(new Token(Tag.SUB));
-//        tokens.add(new Token(Tag.INC));
     }
 
     private void readFile(String filename) {
