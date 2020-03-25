@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class Lexer {
 
@@ -26,8 +27,9 @@ public class Lexer {
                 char c = string.charAt(i);
                 s = graph.getTarget(s, c);
                 System.out.println(s);
-                if (graph.getEndStates().keySet().contains(s)){
-                    tokens.add(new Word("INT",graph.getEndStates().get(s)));
+                Map<Integer, Tag> map = graph.getEndStates();
+                if (map.keySet().contains(s)){
+                    tokens.add(new Word("INT",map.get(s)));
                     s = 1;
                 }
             }

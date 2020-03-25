@@ -12,19 +12,25 @@ import java.util.Set;
 public class Graph {
     private final Set<Edge> edges = new HashSet<>();
     private final MapRuler mapRuler = new MapRuler();
-    private final Map<Integer,Tag> endStates = new HashMap<>();
+    private final Map<Integer, Tag> endStates = new HashMap<>();
 
     public Graph(String filename) {
-        endStates.put(3,Tag.fromString("id"));
+        endStates.put(3, Tag.fromString("id"));
         String str;
         try (FileInputStream inputStream = new FileInputStream(filename);
              BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
             while ((str = bufferedReader.readLine()) != null) {
-                String[] string = str.split(",");
-                int source = Integer.parseInt(string[0]);
-                int target = Integer.parseInt(string[1]);
-                Edge theEdge = new Edge(source, target, string[2]);
-                edges.add(theEdge);
+                if (str.contains("endstate:")) {
+                    str = str.substring(9);
+                    String[] endstate = str.split(" ");
+                    //TODO
+                } else {
+                    String[] string = str.split("#");
+                    int source = Integer.parseInt(string[0]);
+                    int target = Integer.parseInt(string[1]);
+                    Edge edge = new Edge(source, target, string[2]);
+                    edges.add(edge);
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -33,7 +39,7 @@ public class Graph {
 
     public int getTarget(int source, char ch) {
         int target = -1;
-        Set<Character> sets = null;
+        Set<Character> sets;
         Boolean flag = false;
 
         for (Edge edge : edges) {
@@ -54,11 +60,11 @@ public class Graph {
                 }
             }
         }
-        if (!flag){
-            for (Edge edge : edges){
+        if (!flag) {
+            for (Edge edge : edges) {
                 if (edge.getSource() == source) {
                     String string = edge.getWeight();
-                    if (string.contains("other")){
+                    if (string.contains("other")) {
                         target = edge.getTarget();
                     }
                 }
@@ -70,7 +76,8 @@ public class Graph {
     public Set<Edge> getEdges() {
         return edges;
     }
-    public Map<Integer, Tag> getEndStates(){
+
+    public Map<Integer, Tag> getEndStates() {
         return endStates;
     }
 
