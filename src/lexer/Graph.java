@@ -32,7 +32,7 @@ public class Graph {
                         String[] temp = endstate[i].split("#") ;
                         int a = Integer.parseInt(temp[0].substring(1)); // 截取，不要第一个字符，就是左括号
                         String b = temp[1].substring(0,temp[1].length()-1) ; // 截取，不要后面的右括号
-                        System.out.println(b);
+//                        System.out.println(b);
                         endStates.put(a,Tag.fromString(b)) ;
                     }
 //                    System.out.println("nb");
@@ -72,7 +72,7 @@ public class Graph {
                 // 判断这条边上面的 跳转条件string，决定他要跳转到哪个终点上去。
                 // 先检查那些不是other的边，包不包含。
                 if (string.length() > 1 && !string.contains("other")) {
-                    System.out.println(string);
+//                    System.out.println(string);
                     // 判断现在的这条边的跳转集合中，包不包括读进来的字符
                     sets = mapRuler.getSet(string);
                     if (sets.contains(ch)) {
@@ -81,7 +81,8 @@ public class Graph {
                     }
                 }
                 if (string.length() == 1) {
-                    if (string.equals(ch)) {
+                    // 需要把ch转成string，再比较.
+                    if (string.equals(ch+"")) {
                         target = edge.getTarget();
                         flag = true;
                     }

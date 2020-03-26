@@ -20,10 +20,13 @@ public class MapRuler {
         }
         map.put("letter_", weight1);
 
+
         // "digit" -- 0-9
         Set<Character> weight2 = new HashSet<>();
         for (int i = 0; i <= 9; i++) {
-            weight2.add((char) i);
+            String s = i+"";
+            char c = s.charAt(0) ;
+            weight2.add(c);
         }
         map.put("digit", weight2);
 
@@ -31,20 +34,29 @@ public class MapRuler {
         // 1-9
         Set<Character> weight3 = new HashSet<>();
         for (int i = 1; i <= 9; i++) {
-            weight3.add((char) i);
+            String s = i+"";
+            char c = s.charAt(0) ;
+            weight3.add(c);
         }
         map.put("1-9", weight3);
+
 
         // 0-7
         Set<Character> weight4 = new HashSet<>();
         for (int i = 1; i <= 9; i++) {
-            weight4.add((char) i);
+            String s = i+"";
+            char c = s.charAt(0) ;
+            weight4.add(c);
         }
         map.put("0-7", weight4);
+
+
         // 0-9 or a-f or A-F
         Set<Character> weight5 = new HashSet<>();
         for (int i = 0; i <= 9; i++) {
-            weight5.add((char) i);
+            String s = i+"";
+            char c = s.charAt(0) ;
+            weight5.add(c);
         }
         for (int i = 97; i <= 102; i++) {
             weight5.add((char) i);

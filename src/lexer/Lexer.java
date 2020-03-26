@@ -27,33 +27,52 @@ public class Lexer {
         int olds = 1;
         Map<Integer, Tag> endStates = graph.getEndStates();
         //对于每一行
+        String temp = "";
         for (Row row : lines) {
-            String temp = "";
+
             String line = row.getLine();
-            //对一行的每一个字符
 
             int i = 0;
-            while (i<=line.length()){
+            while (i<line.length()){
                 char c = line.charAt(i);
                 olds = s;
-                s = graph.getTarget(s, c);
-                System.out.println(s);
+                s = graph.getTarget(olds, c);
+//                System.out.println(s);
+
+                // 如果跳转之后在起始状态，说明读入的是纯空格，就不要他。
+                if(s == 1){
+                    i++;
+                    continue;
+                }
+
 
                 temp = temp + c;
                 // 如果下一个是终结状态
                 if (endStates.keySet().contains(s)) {
+                    int otherflag = 0;
                     Set<Edge> edges = graph.getEdges();
                     // 如果是通过 other 然后到的终结状态，就应该保留这个字符到下一轮
                     for (Edge e : edges) {
                         if (e.getSource() == olds && e.getTarget() == s && e.getWeight().contains("other")) {
+                            // 输出的时候把刚刚读进来的other字符去掉。
                             String symbol = temp.substring(0,temp.length()-1);
                             System.out.println(symbol);
-                            temp = temp.substring(temp.length()-1,temp.length());
+//                            tokens.add(new Token())
+                            temp = "";
+                            otherflag = 1 ;
+                            s = 1;
+                            i = i- 1;
+                            break ;
                         }
                     }
-
-
+                    if(otherflag == 0){
+                        String symbol = temp ;
+                        System.out.println(symbol);
+                        s = 1;
+                        temp = "" ;
+                    }
                 }
+                i++;
             }
 
 
@@ -112,14 +131,13 @@ public class Lexer {
      */
     public static void main(String[] args) {
 
-        int a = 0x12;
-        System.out.println(a);
+
 
         System.out.println("cguvhbijnkl;");
         Lexer lexer = new Lexer("test/ex1.txt");
         for (Token token : lexer.getTokens()) {
-            System.out.println("gtvyhbuj");
-            System.out.println(token.toString());
+//            System.out.println("gtvyhbuj");
+//            System.out.println(token.toString());
         }
     }
 }
