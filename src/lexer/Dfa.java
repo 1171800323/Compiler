@@ -8,13 +8,13 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 
-public class DFA extends JFrame {
+public class Dfa extends JFrame {
     public Vector<Vector<String>> data = new Vector<Vector<String>>();
     public Vector<String> Title = new Vector<String>();
     private final Graph graph = new Graph("src/dfa.txt");
     private final Set<Integer> State = new TreeSet<>();
 
-    public DFA() {
+    public Dfa() {
         setTitle("DFA转换表");
         setBounds(200, 0, 1000, 750);
         setVisible(true);

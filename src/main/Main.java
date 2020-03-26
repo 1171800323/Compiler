@@ -10,5 +10,8 @@ public class Main {
         for (Row row : lexer.getLines()) {
             System.out.println(row.toString());
         }
+        int a = Integer.valueOf("0x12");
+        System.out.println(a);
+
     }
 }

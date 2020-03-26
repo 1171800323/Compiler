@@ -13,8 +13,26 @@ public class Lexer {
     private final List<Row> lines = new ArrayList<>();
     private final List<Token> tokens = new ArrayList<>();
     private final Graph graph = new Graph("src/dfa.txt");
+    private final Set<String> keyWords = new HashSet<>();
 
     public Lexer(String filename) {
+        keyWords.add("int");
+        keyWords.add("float");
+        keyWords.add("char");
+        keyWords.add("struct");
+        keyWords.add("bool");
+        keyWords.add("true");
+        keyWords.add("false");
+        keyWords.add("if");
+        keyWords.add("else");
+        keyWords.add("while");
+        keyWords.add("do");
+        keyWords.add("for");
+        keyWords.add("break");
+        keyWords.add("continue");
+        keyWords.add("proc");
+        keyWords.add("call");
+        keyWords.add("return");
         readFile(filename);
         findTokens();
     }
@@ -34,19 +52,17 @@ public class Lexer {
 
             int i = 0;
 
-            while (i<line.length()){
+            while (i < line.length()) {
                 char c = line.charAt(i);
                 olds = s;
                 s = graph.getTarget(olds, c);
 //                System.out.println(s);
 
                 // 如果跳转之后在起始状态，说明读入的是纯空格，就不要他。
-                if(s == 1){
+                if (s == 1) {
                     i++;
                     continue;
                 }
-
-
                 temp = temp + c;
                 // 如果下一个是终结状态
                 if (endStates.keySet().contains(s)) {
@@ -56,38 +72,65 @@ public class Lexer {
                     for (Edge e : edges) {
                         if (e.getSource() == olds && e.getTarget() == s && e.getWeight().contains("other")) {
                             // 输出的时候把刚刚读进来的other字符去掉。
-                            String symbol = temp.substring(0,temp.length()-1);
+                            String symbol = temp.substring(0, temp.length() - 1);
                             System.out.println(symbol);
-//                            tokens.add(new Token())
+                            addToken(symbol, s);
                             temp = "";
-                            otherflag = 1 ;
-                            s = 1;
-                            i = i- 1;
-                            break ;
+                            otherflag = 1;
+                            s = 1;        // 状态归一
+                            i = i - 1;
+                            break;
                         }
                     }
-                    if(otherflag == 0){
-                        String symbol = temp ;
+                    if (otherflag == 0) {
+                        String symbol = temp;
                         System.out.println(symbol);
-                        s = 1;
-                        temp = "" ;
+                        addToken(symbol, s);
+                        s = 1;           // 状态归一
+                        temp = "";
                     }
                 }
                 i++;
             }
-
-//            for (int i = 0; i < string.length(); i++) {
-//                char c = string.charAt(i);
-//                s = graph.getTarget(s, c);
-//                System.out.println(s);
-//                //判断到没到终结状态
-//                Map<Integer, Tag> endStates = graph.getEndStates();
-//                if (endStates.keySet().contains(s)){
-////                    tokens.add(new Word("INT",endStates.get(s)));
-//                    s = 1;
-//                }
-//                }
         }
+    }
+
+    private Boolean isKeyWord(String symbol){
+        System.out.println(keyWords.contains(symbol));
+        return keyWords.contains(symbol);
+    }
+
+    private void addToken(String symbol, int state) {
+        Tag tag = graph.getEndStates().get(state);
+        switch (tag) {
+            case ID:
+                if (isKeyWord(symbol)){
+                    tokens.add(new Token(Tag.fromString(symbol)));
+                    return;
+                }
+            case NOTE:
+            case CHARACTER:
+                tokens.add(new Word(symbol, tag));
+                break;
+            case NUM:
+            case OCT:
+            case HEX:
+                tokens.add(new Num(parseToNum(symbol), tag));
+                break;
+            case REAL:
+                tokens.add(new Real(parseToReal(symbol)));
+                break;
+            default:
+                tokens.add(new Token(tag));
+                break;
+        }
+    }
+
+    private int parseToNum(String symbol) {
+        return 0;
+    }
+    private float parseToReal(String symbol){
+        return 0;
     }
 
     /**
@@ -123,14 +166,11 @@ public class Lexer {
      * @param args
      */
     public static void main(String[] args) {
-
-
-
-        System.out.println("cguvhbijnkl;");
         Lexer lexer = new Lexer("test/ex1.txt");
         for (Token token : lexer.getTokens()) {
-//            System.out.println("gtvyhbuj");
-//            System.out.println(token.toString());
+            System.out.println(token.toString());
         }
+        System.out.println(lexer.keyWords);
+        System.out.println(lexer.keyWords.contains("struct"));
     }
 }
