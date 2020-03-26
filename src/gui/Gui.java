@@ -1,5 +1,6 @@
 package gui;
 
+import lexer.DFA;
 import lexer.Lexer;
 import lexer.Token;
 
@@ -86,7 +87,7 @@ public class Gui {
     private void lexerMenuEvent() {
         // 打印输出dfa转换表
         dfaItem.addActionListener(e -> {
-
+            DFA diagarm = new DFA();
         });
 
         // 打印输出token序列

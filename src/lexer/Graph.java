@@ -25,6 +25,7 @@ public class Graph {
                     String[] endstate = str.split(" ");
                     //TODO
                 } else {
+                    System.out.println(str);
                     String[] string = str.split("#");
                     int source = Integer.parseInt(string[0]);
                     int target = Integer.parseInt(string[1]);
