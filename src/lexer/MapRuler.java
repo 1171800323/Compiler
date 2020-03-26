@@ -26,12 +26,15 @@ public class MapRuler {
             weight2.add((char) i);
         }
         map.put("digit", weight2);
+
+
         // 1-9
         Set<Character> weight3 = new HashSet<>();
         for (int i = 1; i <= 9; i++) {
             weight3.add((char) i);
         }
         map.put("1-9", weight3);
+
         // 0-7
         Set<Character> weight4 = new HashSet<>();
         for (int i = 1; i <= 9; i++) {
