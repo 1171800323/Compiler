@@ -87,7 +87,7 @@ public class Gui {
     private void lexerMenuEvent() {
         // 打印输出dfa转换表
         dfaItem.addActionListener(e -> {
-            DFA diagarm = new DFA();
+            new DFA();
         });
 
         // 打印输出token序列

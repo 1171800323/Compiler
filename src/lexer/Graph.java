@@ -4,16 +4,12 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class Graph {
-    private final Set<Edge> edges = new HashSet<>();
+    private final List<Edge> edges = new ArrayList<>();
     private final MapRuler mapRuler = new MapRuler();
     private final Map<Integer, Tag> endStates = new HashMap<>();
-
 
     /**
      * 图结构的构造方法，在这里就读取每一行，包括对终结状态的处理
@@ -35,14 +31,14 @@ public class Graph {
                         System.out.println(b);
                         endStates.put(a,Tag.fromString(b)) ;
                     }
-//                    System.out.println("nb");
                 }
                 // 这一行不是标识终结状态行，是普通的一行，就有起点终点边
                 else {
                     String[] string = str.split("#");
                     int source = Integer.parseInt(string[0]);
                     int target = Integer.parseInt(string[1]);
-                    Edge edge = new Edge(source, target, string[2]);
+                    String weight = string[2];
+                    Edge edge = new Edge(source, target, weight);
                     edges.add(edge);
                 }
             }
@@ -53,7 +49,6 @@ public class Graph {
         System.out.println(endStates);
 
     }
-
 
     /**
      *  就是move方法，给定一个状态和一个输入，返回他的下一个状态
@@ -101,7 +96,7 @@ public class Graph {
         return target;
     }
 
-    public Set<Edge> getEdges() {
+    public List<Edge> getEdges() {
         return edges;
     }
 
@@ -115,10 +110,6 @@ public class Graph {
         for (Edge edge : graph.getEdges()) {
 //            System.out.println(edge.toString());
         }
-
-//        System.out.println(graph.getTarget(1, 'a'));
-//        String s = "other1";
-//        System.out.println(s.contains("other"));
     }
 }
 

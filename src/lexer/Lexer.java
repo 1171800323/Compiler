@@ -33,7 +33,7 @@ public class Lexer {
             //对一行的每一个字符
 
             int i = 0;
-            while (i<=line.length()){
+            while (i <= line.length()) {
                 char c = line.charAt(i);
                 olds = s;
                 s = graph.getTarget(s, c);
@@ -42,21 +42,17 @@ public class Lexer {
                 temp = temp + c;
                 // 如果下一个是终结状态
                 if (endStates.keySet().contains(s)) {
-                    Set<Edge> edges = graph.getEdges();
+                    List<Edge> edges = graph.getEdges();
                     // 如果是通过 other 然后到的终结状态，就应该保留这个字符到下一轮
                     for (Edge e : edges) {
                         if (e.getSource() == olds && e.getTarget() == s && e.getWeight().contains("other")) {
-                            String symbol = temp.substring(0,temp.length()-1);
+                            String symbol = temp.substring(0, temp.length() - 1);
                             System.out.println(symbol);
-                            temp = temp.substring(temp.length()-1,temp.length());
+                            temp = temp.substring(temp.length() - 1, temp.length());
                         }
                     }
-
-
                 }
             }
-
-
 
 //            for (int i = 0; i < string.length(); i++) {
 //                char c = string.charAt(i);
@@ -69,19 +65,12 @@ public class Lexer {
 //                    s = 1;
 //                }
 //                }
-
-
-
-
-
-
-
-
         }
     }
 
     /**
      * 读取测试用例的方法
+     *
      * @param filename
      */
     private void readFile(String filename) {
@@ -108,6 +97,7 @@ public class Lexer {
 
     /**
      * 大main
+     *
      * @param args
      */
     public static void main(String[] args) {
