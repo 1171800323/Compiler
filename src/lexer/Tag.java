@@ -1,10 +1,10 @@
 package lexer;
 
 public enum Tag {
-    ID("id"),NOTE("note"),
+    ID("id"), NOTE("note"),
     INT("int"), FLOAT("float"), CHAR("char"), STRUCT("struct"), BOOL("bool"),
     TRUE("true"), FALSE("false"),
-    NUM("num"), REAL("real"), WORDS("words"),
+    NUM("num"), REAL("real"), WORDS("words"), CHARACTER("character"),
     OCT("oct"), HEX("hex"),
     IF("if"), ELSE("else"), DO("do"), WHILE("while"), FOR("for"), BREAK("break"), CONTINUE("continue"),
     PROC("proc"), CALL("call"), RETURN("return"),
@@ -19,13 +19,20 @@ public enum Tag {
 
     private String value;
 
-    Tag(String tag){
+    Tag(String tag) {
         this.value = tag;
     }
-    public String getValue(){
+
+    public String getValue() {
         return this.getValue();
     }
-    public static Tag fromString(String tag){
+
+    /**
+     * 根据接受的字符串返回其对应种别码，如参数tag为"int",则返回Tag.INT
+     * @param tag 接收的单词
+     * @return 种别码
+     */
+    public static Tag fromString(String tag) {
         for (Tag t : Tag.values()) {
             if (t.value.equals(tag))
                 return t;

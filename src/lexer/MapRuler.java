@@ -8,6 +8,9 @@ import java.util.Set;
 public class MapRuler {
     private final Map<String, Set<Character>> map = new HashMap<>();
 
+    /**
+     * 映射规则，DFA有向图中的边为一个集合，DFA转换表输入文件中边仅为一个字符串，两者需要一个映射关系
+     */
     public MapRuler() {
         // "letter_" -- a-zA-Z_
         Set<Character> weight1 = new HashSet<>();

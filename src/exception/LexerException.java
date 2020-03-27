@@ -1,5 +1,8 @@
 package exception;
 
+/**
+ * 错误处理，记录错误信息
+ */
 public class LexerException extends Exception{
 
     private static final long serialVersionUID = 1L;
