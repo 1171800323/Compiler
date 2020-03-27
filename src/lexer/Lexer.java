@@ -45,7 +45,6 @@ public class Lexer {
                     continue;
                 }
 
-
                 temp = temp + c;
                 // 如果下一个是终结状态
                 if (endStates.keySet().contains(s)) {
@@ -131,9 +130,13 @@ public class Lexer {
      */
     public static void main(String[] args) {
 
+//        String a = "0x11";
+//        int b = Integer.parseInt(a);
+//        System.out.println(b);
 
 
-        System.out.println("cguvhbijnkl;");
+
+//        System.out.println("cguvhbijnkl;");
         Lexer lexer = new Lexer("test/ex1.txt");
         for (Token token : lexer.getTokens()) {
 //            System.out.println("gtvyhbuj");
