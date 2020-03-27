@@ -13,26 +13,8 @@ public class Lexer {
     private final List<Row> lines = new ArrayList<>();
     private final List<Token> tokens = new ArrayList<>();
     private final Graph graph = new Graph("src/dfa.txt");
-    private final Set<String> keyWords = new HashSet<>();
 
     public Lexer(String filename) {
-        keyWords.add("int");
-        keyWords.add("float");
-        keyWords.add("char");
-        keyWords.add("struct");
-        keyWords.add("bool");
-        keyWords.add("true");
-        keyWords.add("false");
-        keyWords.add("if");
-        keyWords.add("else");
-        keyWords.add("while");
-        keyWords.add("do");
-        keyWords.add("for");
-        keyWords.add("break");
-        keyWords.add("continue");
-        keyWords.add("proc");
-        keyWords.add("call");
-        keyWords.add("return");
         readFile(filename);
         findTokens();
     }
@@ -95,16 +77,16 @@ public class Lexer {
         }
     }
 
-    private Boolean isKeyWord(String symbol){
-        System.out.println(keyWords.contains(symbol));
-        return keyWords.contains(symbol);
-    }
-
+    /**
+     * 根据接收状态和接受字符串构建Token
+     * @param symbol 接收单词
+     * @param state 接收状态
+     */
     private void addToken(String symbol, int state) {
         Tag tag = graph.getEndStates().get(state);
         switch (tag) {
             case ID:
-                if (isKeyWord(symbol)){
+                if (graph.isKeyWord(symbol)){
                     tokens.add(new Token(Tag.fromString(symbol)));
                     return;
                 }
@@ -126,9 +108,20 @@ public class Lexer {
         }
     }
 
+    /**
+     * 将字符串常数解析成int
+     * @param symbol 字符串类型的整数、八进制数和十六进制数
+     * @return 字符串的值
+     */
     private int parseToNum(String symbol) {
         return 0;
     }
+
+    /**
+     * 将字符串常数解析成float
+     * @param symbol 字符串类型的浮点数、科学计数法
+     * @return 字符串的值
+     */
     private float parseToReal(String symbol){
         return 0;
     }
@@ -136,7 +129,7 @@ public class Lexer {
     /**
      * 读取测试用例的方法
      *
-     * @param filename
+     * @param filename 文件地址+文件名
      */
     private void readFile(String filename) {
         String str;
@@ -160,17 +153,10 @@ public class Lexer {
         return this.tokens;
     }
 
-    /**
-     * 大main
-     *
-     * @param args
-     */
     public static void main(String[] args) {
         Lexer lexer = new Lexer("test/ex1.txt");
         for (Token token : lexer.getTokens()) {
             System.out.println(token.toString());
         }
-        System.out.println(lexer.keyWords);
-        System.out.println(lexer.keyWords.contains("struct"));
     }
 }

@@ -27,6 +27,11 @@ public enum Tag {
         return this.getValue();
     }
 
+    /**
+     * 根据接受的字符串返回其对应种别码，如参数tag为"int",则返回Tag.INT
+     * @param tag 接收的单词
+     * @return 种别码
+     */
     public static Tag fromString(String tag) {
         for (Tag t : Tag.values()) {
             if (t.value.equals(tag))

@@ -10,17 +10,21 @@ public class Graph {
     private final List<Edge> edges = new ArrayList<>();
     private final MapRuler mapRuler = new MapRuler();
     private final Map<Integer, Tag> endStates = new HashMap<>();
+    private final Set<String> keyWords = new HashSet<>();
 
     /**
      * 图结构的构造方法，在这里就读取每一行，包括对终结状态的处理
-     * @param filename
+     * @param filename 文件地址+文件名
      */
     public Graph(String filename) {
         String str;
         try (FileInputStream inputStream = new FileInputStream(filename);
              BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
             while ((str = bufferedReader.readLine()) != null) {
-                if (str.contains("endstate:")) {
+                if(str.contains("keyword:")){
+                    String[] key = str.substring(6).split(" ");
+                    keyWords.addAll(Arrays.asList(key));
+                }else if (str.contains("endstate:")) {
                     str = str.substring(9);
                     String[] endstate = str.split(" ");
 
@@ -51,10 +55,19 @@ public class Graph {
     }
 
     /**
+     * 检测该接受字符串是否为关键字
+     * @param symbol 接收的单词
+     * @return true,则是关键字，否则是ID
+     */
+    public Boolean isKeyWord(String symbol){
+        return keyWords.contains(symbol);
+    }
+
+    /**
      *  就是move方法，给定一个状态和一个输入，返回他的下一个状态
-     * @param source
-     * @param ch
-     * @return
+     * @param source 当前状态
+     * @param ch 输入字符
+     * @return 跳转到的下一个状态
      */
     public int getTarget(int source, char ch) {
         int target = -1;
@@ -114,35 +127,3 @@ public class Graph {
     }
 }
 
-class Edge {
-    private final int source;
-    private final int target;
-    private final String weight;
-
-    public Edge(int source, int target, String weight) {
-        this.source = source;
-        this.target = target;
-        this.weight = weight;
-    }
-
-    public int getSource() {
-        return source;
-    }
-
-    public int getTarget() {
-        return target;
-    }
-
-    public String getWeight() {
-        return weight;
-    }
-
-    @Override
-    public String toString() {
-        return "Edge{" +
-                "source=" + source +
-                ", target=" + target +
-                ", weight='" + weight + '\'' +
-                '}';
-    }
-}

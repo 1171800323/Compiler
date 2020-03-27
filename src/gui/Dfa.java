@@ -1,4 +1,7 @@
-package lexer;
+package gui;
+
+import lexer.Edge;
+import lexer.Graph;
 
 import javax.swing.*;
 import javax.swing.table.JTableHeader;

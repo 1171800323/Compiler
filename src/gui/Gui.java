@@ -1,6 +1,5 @@
 package gui;
 
-import lexer.Dfa;
 import lexer.Lexer;
 import lexer.Token;
 

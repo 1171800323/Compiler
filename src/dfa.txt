@@ -1,3 +1,4 @@
+keyword:int float char struct bool true false if else while do for break continue proc call return
 endstate:(3#id) (24#/) (7#note) (9#num) (12#real) (16#real) (23#hex) (18#num) (21#oct)
 endstate:(33#() (34#[) (35#{) (36#*) (37#%) (38#,) (39#;) (40#)) (41#]) (42#})
 endstate:(43#!=) (44#!) (45#>=) (46#>) (47#<=) (48#<) (49#++) (50#+) (51#--) (52#-)
