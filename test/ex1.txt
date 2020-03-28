@@ -1,4 +1,14 @@
-struct fg;
-int a = 0x12;
-char a = ' ';
-/*haha*/
+<STRUCT, _>
+<ID, fg>
+<SEMI, _>
+<ID, int>
+<ID, a>
+<ASSIGN, _>
+<HEX, 0>
+<SEMI, _>
+<CHAR, _>
+<ID, a>
+<ASSIGN, _>
+<CHARACTER, ' '>
+<SEMI, _>
+<NOTE, /*haha*/>
