@@ -22,8 +22,9 @@ public class Graph {
              BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
             while ((str = bufferedReader.readLine()) != null) {
                 if(str.contains("keyword:")){
-                    String[] key = str.substring(6).split(" ");
+                    String[] key = str.substring(8).split(" ");
                     keyWords.addAll(Arrays.asList(key));
+                    System.out.println(keyWords.toString());
                 }else if (str.contains("endstate:")) {
                     str = str.substring(9);
                     String[] endstate = str.split(" ");
