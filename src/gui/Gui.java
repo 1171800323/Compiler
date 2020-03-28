@@ -1,7 +1,6 @@
 package gui;
 
 import lexer.Lexer;
-import lexer.Token;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,7 +21,7 @@ public class Gui {
 
     public Gui() {
         jFrame = new JFrame("Compiler");
-        jFrame.setSize(1000, 800);
+        jFrame.setSize(800, 800);
         jFrame.setLocationRelativeTo(null); // 居中
         jFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         jFrame.setResizable(false);
@@ -85,19 +84,10 @@ public class Gui {
 
     private void lexerMenuEvent() {
         // 打印输出dfa转换表
-        dfaItem.addActionListener(e -> {
-            new Dfa();
-        });
+        dfaItem.addActionListener(e -> new Dfa());
 
         // 打印输出token序列
-        tokenItem.addActionListener(e -> {
-            textArea.setText(null);
-            Lexer lexer = new Lexer(file.getAbsolutePath());
-            for (Token token : lexer.getTokens()) {
-                textArea.append(token.toString()+"\n");
-                System.out.println(token.toString());
-            }
-        });
+        tokenItem.addActionListener(e -> new Token(file.getAbsolutePath()));
     }
 
     private void fileMenuEvent() {

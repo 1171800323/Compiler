@@ -48,7 +48,7 @@ public class Dfa extends JFrame {
                 if (state == edge.getSource()) {
                     String temp = String.valueOf(edge.getTarget());
                     if (graph.getEndStates().containsKey(edge.getTarget())) {
-                        temp += "("+graph.getEndStates().get(edge.getTarget())+")";
+                        temp += "(" + graph.getEndStates().get(edge.getTarget()) + ")";
                     }
                     s[locataion] = temp;
                     System.out.println(locataion + " " + s[locataion]);

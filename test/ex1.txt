@@ -1,14 +1,9 @@
-<STRUCT, _>
-<ID, fg>
-<SEMI, _>
-<ID, int>
-<ID, a>
-<ASSIGN, _>
-<HEX, 0>
-<SEMI, _>
-<CHAR, _>
-<ID, a>
-<ASSIGN, _>
-<CHARACTER, ' '>
-<SEMI, _>
-<NOTE, /*haha*/>
+#$@^哈哈
+char ch = 'm;
+float fl = 9.2e3;
+/*haha*/
+struct fg;
+int a = 0x12;
+int k = 07;
+float b = 99.9;
+float c = 9.7e-2;
