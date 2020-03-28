@@ -52,6 +52,9 @@ public class Lexer {
                     errors.add(new LexerException(temp, row.getNum(), i));
                     temp = "";
                     s = 1;
+                    if (olds != 1){ // 如果原始状态是1，遇见非法字符不可以回退，其他状态可以回退一个字符
+                        i--;
+                    }
                 }
                 // 如果下一个是终结状态
                 if (endStates.keySet().contains(s)) {

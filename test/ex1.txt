@@ -3,7 +3,10 @@ char ch = 'm;
 float fl = 9.2e3;
 /*haha*/
 struct fg;
-int a = 0x12;
+int a = 0x12$;
 int k = 07;
 float b = 99.9;
 float c = 9.7e-2;
+k++;
+if(k>=10){
+}
