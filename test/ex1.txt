@@ -1,14 +1,17 @@
-<STRUCT, _>
-<ID, fg>
-<SEMI, _>
-<ID, int>
-<ID, a>
-<ASSIGN, _>
-<HEX, 0>
-<SEMI, _>
-<CHAR, _>
-<ID, a>
-<ASSIGN, _>
-<CHARACTER, ' '>
-<SEMI, _>
-<NOTE, /*haha*/>
+struct student{
+    int id ;
+    char[] name ;
+};
+
+/*main方法*/
+int main (){
+    boolen flag = false;
+    int a = 011 ; /* 八进制的数*/
+    int b = 0xff ;
+    int c = 0;
+    char ch =  ';
+    whlie( !flag ){
+        c += 1 ;
+    }
+
+}

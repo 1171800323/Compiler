@@ -30,11 +30,8 @@ public class Lexer {
         //对于每一行
         String temp = "";
         for (Row row : lines) {
-
             String line = row.getLine();
-
             int i = 0;
-
             while (i < line.length()) {
                 char c = line.charAt(i);
                 olds = s;
@@ -119,7 +116,7 @@ public class Lexer {
             // 注意消去0x，所以从 i = 2 开始
             for (int i = 2;i<symbol.length();i++){
                 char c = symbol.charAt(i);
-                if(c >= 'A' &&c <= 'F')//十六进制还要判断字符是不是在A-F或者a-f之间
+                if(c >= 'A' && c <= 'F')//十六进制还要判断字符是不是在A-F或者a-f之间
                     n = c-'A'+10;
                 else if(c >= 'a'&& c <='f')
                     n = c-'a'+10;
@@ -160,6 +157,8 @@ public class Lexer {
 
         return result;
     }
+
+
 
     /**
      * 读取测试用例的方法
