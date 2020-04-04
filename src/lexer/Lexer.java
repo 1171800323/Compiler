@@ -41,13 +41,16 @@ public class Lexer {
                 char c = line.charAt(i);
                 olds = s;
                 s = graph.getTarget(olds, c);
-                // 如果跳转之后在起始状态，说明读入的是纯空格，就不要他。
+
+                // 如果跳转之后在起始状态，说明读入的是纯空格，就可以跳过他。
                 if (s == 1) {
                     i++;
                     continue;
                 }
+
                 temp = temp + c; // 这就是设置一个缓存，在到达终结转态之前. 把读取的字符保留成一串
-                // 记录错误位置
+
+                // 如果从某一个位置开始读，出错了，返回值是-1， 记录错误位置
                 if (s == -1) {
                     errors.add(new LexerException(temp, row.getNum(), i));
                     temp = "";
@@ -56,6 +59,7 @@ public class Lexer {
                         i--;
                     }
                 }
+
                 // 如果下一个是终结状态
                 if (endStates.keySet().contains(s)) {
                     int otherflag = 0;
@@ -175,6 +179,8 @@ public class Lexer {
         double result = Double.parseDouble(bd.toPlainString());
         return result;
     }
+
+
 
     /**
      * 读取测试用例的方法
