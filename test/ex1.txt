@@ -2,16 +2,24 @@ struct student{
     int id ;
     char[] name ;
 };
-
-/*main方法*/
-int main (){
-    boolen flag = false;
-    int a = 011 ; /* 八进制的数*/
+    boolen flag = false  ;
+    int a = 011 #;
     int b = 0xff ;
-    int c = 0;
-    char ch =  ';
-    whlie( !flag ){
-        c += 1 ;
+    int c = 0   错误测试 */ ;
+    float d = 99.9;
+    float e  = 9.7e-2;
+    char ch =  ' ;
+    char cch = 'a'; & ;
+    while(c<10){
+        for (int i = 1 ; i<5;i++){
+            c += 1;
+            if(c = 9)
+                break;
+        }
     }
-
-}
+    /*函数声明*/
+    proc int getSum(int x,int y){
+        return x+y;
+    }
+    /*函数调用*/
+    call getNum(3,5);
