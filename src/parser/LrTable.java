@@ -7,8 +7,10 @@ import java.io.InputStreamReader;
 import java.util.*;
 
 public class LrTable {
-
-    public static final String startSymbol = "Program";
+    //    private static final String startSymbol = "Program";
+//    private static final String startSymbolReal = "P";
+    private static final String startSymbol = "S'";
+    private static final String startSymbolReal = "S";
     public static final String acceptSymbol = "acc";
     public static final String stackBottom = "$";
     public static final String emptySymbol = "ε";
@@ -28,7 +30,6 @@ public class LrTable {
     public LrTable(String filename) {
         try (FileInputStream inputStream = new FileInputStream(filename);
              BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
-
             String str;
             while ((str = bufferedReader.readLine()) != null) {
                 String[] production = str.split("->");
@@ -41,18 +42,18 @@ public class LrTable {
                     productionMap.putIfAbsent(left, new HashSet<Production>());
                     productionMap.get(left).add(product);
                 }
+                // 非终结符
                 nonTerminals.add(left);
             }
-
             for (Production production : productionSet) {
                 List<String> rightList = production.getRight();
                 for (String string : rightList) {
+                    // 终结符除去非终结符和ε
                     if (!nonTerminals.contains(string) && !string.equals(emptySymbol)) {
                         terminals.add(string);
                     }
                 }
             }
-
             terminals.add(stackBottom);
             tableHead.addAll(terminals);
             tableHead.addAll(nonTerminals);
@@ -61,9 +62,8 @@ public class LrTable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         for (Production production : productionSet) {
-            System.out.println(production.getLeft() + "->" + production.getRight());
+            System.out.println(production);
         }
         getFirstSet();
     }
@@ -72,6 +72,7 @@ public class LrTable {
         for (String noTerminal : nonTerminals) {
             findFirst(noTerminal, productionMap.get(noTerminal));
         }
+        System.out.println("firstSet: ");
         for (Map.Entry<String, Set<String>> entry : firstSet.entrySet()) {
             System.out.println(entry.getKey() + ":" + entry.getValue() + "");
         }
@@ -110,20 +111,125 @@ public class LrTable {
         return first;
     }
 
-    public Set<String> getTerminals() {
-        return terminals;
+    private Set<String> getFirstSetFromList(List<String> nodes) {
+        Set<String> first = new HashSet<>();
+        for (String node : nodes) {
+            // 如果是非终结符，查询它的first集
+            if (nonTerminals.contains(node)) {
+                Set<String> tempSet = firstSet.get(node);
+                first.addAll(tempSet);
+                // 如果第一个node可以推出空，则要计算第二个node，否则直接终止
+                if (!tempSet.contains(emptySymbol)) {
+                    break;
+                }
+            } else { // 终结符，直接返回
+                first.add(node);
+                break;
+            }
+        }
+        return first;
     }
 
-    public Set<String> getNonTerminals() {
-        return nonTerminals;
+    private Set<Item> getClosure(Set<Item> startItem) {
+        Set<Item> items = new HashSet<>(startItem);
+        while (true) {
+            int itemsSize = items.size();
+            Set<Item> tempItems = new HashSet<>();     // 设置此临时变量，防止遍历items时添加元素，造成错误
+            Iterator<Item> itemIterator = items.iterator();
+            while (itemIterator.hasNext()) {
+                Item item = itemIterator.next();
+                List<String> right = item.getRight();
+                int location = item.getLocation();
+                // 如果相等，则这是一个规约项目，否则，如A -> α · B β , a，还需将B -> · γ, b加入items
+                if (!item.isReduceItem()) {
+                    String B = right.get(location);
+                    // 对每一个左部为B的产生式，如果B不是非终结符，则不用添加
+                    if (nonTerminals.contains(B)) {
+                        for (Production production : productionMap.get(B)) {
+                            List<String> betaA = new ArrayList<>(right.subList(location + 1, right.size()));
+                            betaA.add(item.getLookahead());
+                            // 添加first(βa)中每个元素为展望符
+                            for (String b : getFirstSetFromList(betaA)) {
+                                tempItems.add(new Item(B, production.getRight(), 0, b));
+                            }
+                        }
+                    }
+                }
+            }
+            items.addAll(tempItems);
+            // 终止条件，items不再增加元素
+            if (items.size() == itemsSize) {
+                break;
+            }
+        }
+        return items;
     }
 
-    public Set<Production> getProduction(String left) {
-        return productionMap.get(left);
+    private Set<Item> gotoFunction(Set<Item> items, String x) {
+        Set<Item> sets = new HashSet<>();
+        for (Item item : items) {
+            // 如果不是规约项目
+            if (!item.isReduceItem()) {
+                // 如果这个项目，等待出现的符号是X
+                // 如，A → α∙Xβ，a，要将A → αX∙β，a加入
+                if (item.getRight().get(item.getLocation()).equals(x)) {
+                    sets.add(new Item(item.getLeft(), item.getRight(), item.getLocation() + 1, item.getLookahead()));
+                }
+            }
+        }
+        return getClosure(sets);
     }
+
+    public void items() {
+        Set<Item> start = new HashSet<>();
+        start.add(new Item(startSymbol, new ArrayList<>(Arrays.asList(startSymbolReal)), 0, stackBottom));
+        int number = 0;
+        // 添加I0项集族
+        itemSets.add(new ItemSet(getClosure(start), number));
+        number = 1;
+        // 收集所有文法符号
+        Set<String> symbols = new HashSet<>();
+        symbols.addAll(nonTerminals);
+        symbols.addAll(terminals);
+        while (true) {
+            int size = itemSets.size();
+            Set<ItemSet> tempItemSet = new HashSet<>();
+            Iterator<ItemSet> iterator = itemSets.iterator();
+            // 对每个项集I
+            while (iterator.hasNext()) {
+                ItemSet itemSet = iterator.next();
+                // 对每个文法符号X
+                for (String symbol : symbols) {
+                    Set<Item> closure = gotoFunction(itemSet.getItemSet(), symbol);
+                    // 如果gotoFunction(I,X)非空
+                    if (closure.size() > 0) {
+                        ItemSet temp = new ItemSet(closure, number);
+                        // 将gotoFunction(I,X)添加到itemSets中
+                        if (!itemSets.contains(temp)) {
+                            tempItemSet.add(temp);
+                            // 设置项集族I经过X到达的下一个状态
+                            itemSet.setGotoTable(symbol, number);
+                            number += 1;
+                        }
+                    }
+                }
+            }
+            itemSets.addAll(tempItemSet);
+            if (itemSets.size() == size) {
+                break;
+            }
+        }
+    }
+
 
     public static void main(String[] args) {
-        LrTable lrTable = new LrTable("src/parser/grammar.txt");
+        LrTable lrTable = new LrTable("src/parser/grammar_test.txt");
+//        LrTable lrTable = new LrTable("src/parser/grammar.txt");
+        lrTable.items();
+        System.out.println("ItemSets: ");
+        for (ItemSet itemSet : lrTable.itemSets) {
+            System.out.println(itemSet.toString());
+        }
+        System.out.println("size: " + lrTable.itemSets.size());
     }
-
 }

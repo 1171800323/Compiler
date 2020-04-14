@@ -20,4 +20,14 @@ public class Production {
     public List<String> getRight() {
         return right;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(left+" -> ");
+        for (String string : right) {
+            stringBuilder.append(string+" ");
+        }
+        return stringBuilder.toString().trim();
+    }
 }
