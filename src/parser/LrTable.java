@@ -230,6 +230,7 @@ public class LrTable {
         for (ItemSet itemSet : lrTable.itemSets) {
             System.out.println(itemSet.toString());
         }
+
         System.out.println("size: " + lrTable.itemSets.size());
     }
 }

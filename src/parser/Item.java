@@ -43,10 +43,11 @@ public class Item {
 
     @Override
     public String toString() {
-        right.add(location, "·");
+        List<String> list = new ArrayList<>(right);
+        list.add(location, "·");
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(left + " -> ");
-        for (String string : right) {
+        for (String string : list) {
             stringBuilder.append(string + " ");
         }
         stringBuilder.append(", " + lookahead + "\n");
