@@ -18,7 +18,6 @@ public class Item {
         this.right.addAll(right);
         this.location = location;
         this.lookahead = lookahead;
-        assert location > right.size();
     }
 
     public String getLeft() {
@@ -39,6 +38,12 @@ public class Item {
 
     public Boolean isReduceItem() {
         return location == right.size();
+    }
+
+    public Production getProduction() {
+        String[] right = new String[this.right.size()];
+        this.right.toArray(right);
+        return new Production(left, right);
     }
 
     @Override

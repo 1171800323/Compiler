@@ -7,26 +7,32 @@ import java.io.InputStreamReader;
 import java.util.*;
 
 public class LrTable {
-    //    private static final String startSymbol = "Program";
-//    private static final String startSymbolReal = "P";
-    private static final String startSymbol = "S'";
-    private static final String startSymbolReal = "S";
+    // 特殊的一些文法符号
+    public static final String startSymbol = "Program";
+    public static final String startSymbolReal = "P";
+    //    public static final String startSymbol = "S'";
+//    public static final String startSymbolReal = "S";
     public static final String acceptSymbol = "acc";
     public static final String stackBottom = "$";
     public static final String emptySymbol = "ε";
 
+    // 产生式集合
     private final Set<Production> productionSet = new HashSet<>();
     private final Map<String, Set<Production>> productionMap = new HashMap<>();
 
+    // 终结符或非终结符集合
     private final Set<String> terminals = new HashSet<>();
     private final Set<String> nonTerminals = new HashSet<>();
-    private Map<String, Set<String>> firstSet = new HashMap<>();
 
+    // 非终结符的first集
+    private final Map<String, Set<String>> firstSet = new HashMap<>();
+
+    // 项集族及之间状态转移关系
     private final Set<ItemSet> itemSets = new HashSet<>();
-    private List<String> tableHead = new ArrayList<>();
-    private Map<Integer, Map<String, Integer>> graph = new HashMap<>();
+    private final Map<Integer, Map<String, Integer>> graph = new HashMap<>();
 
-    private Table lrTable;
+    // LR(1)分析表
+    private final Table lrTable;
 
     public LrTable(String filename) {
         try (FileInputStream inputStream = new FileInputStream(filename);
@@ -45,6 +51,7 @@ public class LrTable {
                 }
                 // 非终结符
                 nonTerminals.add(left);
+
             }
             for (Production production : productionSet) {
                 List<String> rightList = production.getRight();
@@ -56,27 +63,96 @@ public class LrTable {
                 }
             }
             terminals.add(stackBottom);
-            tableHead.addAll(terminals);
-            tableHead.addAll(nonTerminals);
-            tableHead.remove(startSymbol);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
-        for (Production production : productionSet) {
-            System.out.println(production);
-        }
+//        for (Production production : productionSet) {
+//            System.out.println(production);
+//        }
+
+        // 计算各个非终结符的first集
         getFirstSet();
+
+        // 建立了项集族以及各项集之间转移关系
+        items();
+
+        // 构造LR(1)分析表
+        List<String> head = new ArrayList<>(terminals);
+        head.addAll(nonTerminals);
+        head.remove(startSymbol);
+        lrTable = new Table(itemSets.size() + 2, head);  // 传入表头，状态数两个参数以初始化
+        constructLrTable();
     }
 
-    public void getFirstSet() {
+    public Table getLrTable() {
+        return lrTable;
+    }
+
+    private void constructLrTable() {
+        System.out.println("----------------------");
+
+        // 此处调试bug，未解决
+//        Set<Integer> set = new HashSet<>();
+//        List<Integer> list = new ArrayList<>();
+//        for (ItemSet itemSet : itemSets) {
+//            set.add(itemSet.getNumber());
+//            list.add(itemSet.getNumber());
+//        }
+//        System.out.println(itemSets.size());
+//        System.out.println(set.size());
+//        System.out.println(set);
+//        System.out.println(list.size());
+//        list.sort(null);
+//        System.out.println(list);
+//        System.out.println("少: ");
+//        for (int i = 0; i <= 201; i++) {
+//            if (!set.contains(i)) {
+//                System.out.println(i);
+//            }
+//        }
+
+        /**/
+        for (Map.Entry<Integer, Map<String, Integer>> entry : graph.entrySet()) {
+            for (Map.Entry<String, Integer> entry1 : entry.getValue().entrySet()) {
+                if (nonTerminals.contains(entry1.getKey())) {
+                    Action action = new Action.Builder().status(entry1.getValue()).build();
+                    lrTable.setTable(entry.getKey(), entry1.getKey(), action);
+                } else {
+                    Action action = new Action.Builder().action("shift").status(entry1.getValue()).build();
+                    lrTable.setTable(entry.getKey(), entry1.getKey(), action);
+                }
+            }
+        }
+        for (ItemSet itemSet : itemSets) {
+            if (itemSet.isAccept()) {
+                lrTable.setTable(itemSet.getNumber(), stackBottom, new Action.Builder().action(acceptSymbol).build());
+            } else if (itemSet.hasReduceItem()) {
+                Set<Item> reduceItems = itemSet.getReduceItem();
+                for (Item item : reduceItems) {
+                    if (item.getLookahead().equals(emptySymbol)) {
+                        System.out.println(item);
+                    }
+                    lrTable.setTable(itemSet.getNumber(), item.getLookahead(),
+                            new Action.Builder().action("reduce").production(item.getProduction()).build());
+                }
+            }
+        }
+        System.out.println("LR(1) Table: ");
+        System.out.println(lrTable.toString());
+
+
+        System.out.println("----------------------");
+    }
+
+    private void getFirstSet() {
         for (String noTerminal : nonTerminals) {
             findFirst(noTerminal, productionMap.get(noTerminal));
         }
-        System.out.println("firstSet: ");
-        for (Map.Entry<String, Set<String>> entry : firstSet.entrySet()) {
-            System.out.println(entry.getKey() + ":" + entry.getValue() + "");
-        }
+//        System.out.println("firstSet: ");
+//        for (Map.Entry<String, Set<String>> entry : firstSet.entrySet()) {
+//            System.out.println(entry.getKey() + ":" + entry.getValue() + "");
+//        }
     }
 
     private Set<String> findFirst(String leftNode, Set<Production> rightNodes) {
@@ -119,11 +195,12 @@ public class LrTable {
             if (nonTerminals.contains(node)) {
                 Set<String> tempSet = firstSet.get(node);
                 first.addAll(tempSet);
+                first.remove(emptySymbol);
                 // 如果第一个node可以推出空，则要计算第二个node，否则直接终止
                 if (!tempSet.contains(emptySymbol)) {
                     break;
                 }
-            } else { // 终结符，直接返回
+            } else if (terminals.contains(node)) { // 终结符，直接返回
                 first.add(node);
                 break;
             }
@@ -181,7 +258,7 @@ public class LrTable {
         return getClosure(sets);
     }
 
-    public void items() {
+    private void items() {
         Set<Item> start = new HashSet<>();
         start.add(new Item(startSymbol, new ArrayList<>(Arrays.asList(startSymbolReal)), 0, stackBottom));
         int number = 0;
@@ -205,44 +282,44 @@ public class LrTable {
                     // 如果gotoFunction(I,X)非空
                     if (closure.size() > 0) {
                         ItemSet temp = new ItemSet(closure, number);
-                        // 将gotoFunction(I,X)添加到itemSets中
                         if (!itemSets.contains(temp)) {
-                            tempItemSet.add(temp);
                             // 设置项集族I经过X到达的下一个状态
                             itemSet.setGotoTable(symbol, number);
                             graph.putIfAbsent(itemSet.getNumber(), new HashMap<>());
                             graph.get(itemSet.getNumber()).put(symbol, number);
+                            // 将gotoFunction(I,X)添加到itemSets中
+                            tempItemSet.add(temp);
                             number += 1;
+                        } else {
+                            for (ItemSet itemSet1 : itemSets) {
+                                if (itemSet1.equals(temp)) {
+                                    // 设置项集族I经过X到达的下一个状态
+                                    itemSet.setGotoTable(symbol, itemSet1.getNumber());
+                                    graph.putIfAbsent(itemSet.getNumber(), new HashMap<>());
+                                    graph.get(itemSet.getNumber()).put(symbol, itemSet1.getNumber());
+                                }
+                            }
                         }
+
                     }
                 }
             }
+
             itemSets.addAll(tempItemSet);
             if (itemSets.size() == size) {
                 break;
             }
         }
-        // 以上建立了项集族以及各项集之间转移关系，因此接下来可以构造LR(1)分析表
-        constructLrTable();
-    }
-
-    private int getTarget(int source, String weight) {
-        return graph.get(source).get(weight);
-    }
-
-    private void constructLrTable() {
-
     }
 
     public static void main(String[] args) {
-        LrTable lrTable = new LrTable("src/parser/grammar_test.txt");
+        LrTable lrTable = new LrTable("src/parser/grammar_test1.txt");
 //        LrTable lrTable = new LrTable("src/parser/grammar.txt");
-        lrTable.items();
-        System.out.println("ItemSets: ");
-        for (ItemSet itemSet : lrTable.itemSets) {
-            System.out.println(itemSet.toString());
-        }
-        System.out.println("size: " + lrTable.itemSets.size());
-        System.out.println(lrTable.graph);
+//        System.out.println("ItemSets: ");
+//        for (ItemSet itemSet : lrTable.itemSets) {
+//            System.out.println(itemSet.toString());
+//        }
+//        System.out.println("size: " + lrTable.itemSets.size());
+//        System.out.println(lrTable.graph);
     }
 }

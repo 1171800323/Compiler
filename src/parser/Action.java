@@ -1,15 +1,16 @@
 package parser;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Action {
     private final String action;
     private final int status;
     private final Production production;
-    // 如果action = "reduce" , production非null, status为null, 对应规约动作
-    // 如果action = "shift",   production为null, status非null, 对应移入动作
-    // 如果action = null,      production为null, status非null
+    // ACTION表
+    // 如果action = "error", 错误处理
+    // 如果action = "acc", 接收
+    // 如果action = "reduce" , production非null,  使用production进行规约
+    // 如果action = "shift",   status非null, 移入状态status
+    // GOTO表
+    // 仅为status赋值即可
 
     private Action(Builder builder) {
         status = builder.status;
@@ -33,10 +34,12 @@ public class Action {
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
 
-        if ("reduce".equals(action)) {
+        if ("acc".equals(action)) {
+            stringBuilder.append("acc");
+        } else if ("reduce".equals(action)) {
             stringBuilder.append("r: " + production.toString());
         } else if ("shift".equals(action)) {
-            stringBuilder.append("s: " + status);
+            stringBuilder.append("s" + status);
         } else {
             stringBuilder.append(status);
         }

@@ -3,10 +3,10 @@ package parser;
 import java.util.*;
 
 public class ItemSet {
-
     private final Set<Item> itemSet = new HashSet<>();
     private final int number;
     private final Map<String, Integer> gotoTable = new HashMap<>();
+    private final Set<Item> reduceItem = new HashSet<>();
 
     public ItemSet(Set<Item> itemSet, int number) {
         this.itemSet.addAll(itemSet);
@@ -21,6 +21,32 @@ public class ItemSet {
         return number;
     }
 
+    // 该项集是否有规约项目
+    public Boolean hasReduceItem() {
+        Boolean flag = false;
+        for (Item item : itemSet) {
+            if (item.isReduceItem()) {
+                flag = true;
+                reduceItem.add(item);
+            }
+        }
+        return flag;
+    }
+
+    public Boolean isAccept() {
+        List<String> right = new ArrayList<>();
+        right.add(LrTable.startSymbolReal);
+        Item item = new Item(LrTable.startSymbol, right, 1, LrTable.stackBottom);
+        if (itemSet.size() == 1 && itemSet.contains(item)) {
+            return true;
+        }
+        return false;
+    }
+
+    public Set<Item> getReduceItem() {
+        return reduceItem;
+    }
+
     public void setGotoTable(String symbol, int next) {
         gotoTable.put(symbol, next);
     }
@@ -33,7 +59,7 @@ public class ItemSet {
             stringBuilder.append(item.toString());
         }
         for (Map.Entry<String, Integer> entry : gotoTable.entrySet()){
-            stringBuilder.append("by '"+entry.getKey()+"' go to next: "+entry.getValue()+"\n");
+            stringBuilder.append("by '" + entry.getKey() + "' go to I" + entry.getValue() + "\n");
         }
         return  stringBuilder.toString();
     }
