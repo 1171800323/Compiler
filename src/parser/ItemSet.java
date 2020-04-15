@@ -17,8 +17,12 @@ public class ItemSet {
         return new HashSet<>(itemSet);
     }
 
-    public void setGotoTable(String symbol, int next){
-        gotoTable.put(symbol,next);
+    public int getNumber() {
+        return number;
+    }
+
+    public void setGotoTable(String symbol, int next) {
+        gotoTable.put(symbol, next);
     }
 
     @Override

@@ -24,8 +24,9 @@ public class LrTable {
 
     private final Set<ItemSet> itemSets = new HashSet<>();
     private List<String> tableHead = new ArrayList<>();
-    private String[][] actionTable;
-    private Map<Integer, Map<String, Integer>> gotoTable = new HashMap<>();
+    private Map<Integer, Map<String, Integer>> graph = new HashMap<>();
+
+    private Table lrTable;
 
     public LrTable(String filename) {
         try (FileInputStream inputStream = new FileInputStream(filename);
@@ -209,6 +210,8 @@ public class LrTable {
                             tempItemSet.add(temp);
                             // 设置项集族I经过X到达的下一个状态
                             itemSet.setGotoTable(symbol, number);
+                            graph.putIfAbsent(itemSet.getNumber(), new HashMap<>());
+                            graph.get(itemSet.getNumber()).put(symbol, number);
                             number += 1;
                         }
                     }
@@ -219,8 +222,17 @@ public class LrTable {
                 break;
             }
         }
+        // 以上建立了项集族以及各项集之间转移关系，因此接下来可以构造LR(1)分析表
+        constructLrTable();
     }
 
+    private int getTarget(int source, String weight) {
+        return graph.get(source).get(weight);
+    }
+
+    private void constructLrTable() {
+
+    }
 
     public static void main(String[] args) {
         LrTable lrTable = new LrTable("src/parser/grammar_test.txt");
@@ -230,7 +242,7 @@ public class LrTable {
         for (ItemSet itemSet : lrTable.itemSets) {
             System.out.println(itemSet.toString());
         }
-
         System.out.println("size: " + lrTable.itemSets.size());
+        System.out.println(lrTable.graph);
     }
 }

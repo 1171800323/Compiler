@@ -59,6 +59,7 @@ public class Item {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Item item = (Item) o;
+        // List比较是否相等是比较内容是否相同
         return location == item.location &&
                 Objects.equals(left, item.left) &&
                 Objects.equals(right, item.right) &&

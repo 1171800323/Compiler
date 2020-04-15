@@ -1,4 +1,4 @@
 S' -> S
-S -> L = R 丨 R
-L -> * R 丨 id
-R -> L
+S -> a A d 丨 b B d 丨 a B e 丨 b A e
+A -> c
+B -> c
