@@ -1,4 +1,3 @@
-S' -> S
-S -> L = R 丨 R
-L -> * R 丨 id
-R -> L
+Program -> P
+P -> a B d 丨 ε
+B -> P b 丨 ε

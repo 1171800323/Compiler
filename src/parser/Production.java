@@ -22,12 +22,20 @@ public class Production {
         return right;
     }
 
+    public Boolean isEmptyProduction() {
+        if (right.size() == 1 && right.contains(LrTable.emptySymbol)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(left+" -> ");
+        stringBuilder.append(left + " -> ");
         for (String string : right) {
-            stringBuilder.append(string+" ");
+            stringBuilder.append(string + " ");
         }
         return stringBuilder.toString().trim();
     }

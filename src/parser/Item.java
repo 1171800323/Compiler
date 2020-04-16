@@ -37,7 +37,12 @@ public class Item {
     }
 
     public Boolean isReduceItem() {
-        return location == right.size();
+        // 处理空产生式的情况
+        if (right.size() == 1 && right.contains(LrTable.emptySymbol)) {
+            return true;
+        } else {
+            return location == right.size();
+        }
     }
 
     public Production getProduction() {

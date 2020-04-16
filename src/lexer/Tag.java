@@ -7,7 +7,7 @@ public enum Tag {
     NUM("num"), REAL("real"), WORDS("words"), CHARACTER("character"),
     OCT("oct"), HEX("hex"),
     IF("if"), ELSE("else"), DO("do"), WHILE("while"), FOR("for"), BREAK("break"), CONTINUE("continue"),
-    PROC("proc"), CALL("call"), RETURN("return"),
+    PROC("proc"), CALL("call"), RETURN("return"),THEN("then"),
     AND("&&"), OR("||"), NOT("!"),
     EQ("=="), NE("!="), LE("<="), GE(">="), GT(">"), LT("<"),
     ADD("+"), SUB("-"), MUL("*"), DIV("/"), REMAIN("%"),

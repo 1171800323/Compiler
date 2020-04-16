@@ -7,11 +7,10 @@ import java.io.InputStreamReader;
 import java.util.*;
 
 public class LrTable {
+
     // 特殊的一些文法符号
     public static final String startSymbol = "Program";
     public static final String startSymbolReal = "P";
-    //    public static final String startSymbol = "S'";
-//    public static final String startSymbolReal = "S";
     public static final String acceptSymbol = "acc";
     public static final String stackBottom = "$";
     public static final String emptySymbol = "ε";
@@ -91,48 +90,47 @@ public class LrTable {
 
     private void constructLrTable() {
         System.out.println("----------------------");
-
-        // 此处调试bug，未解决
-//        Set<Integer> set = new HashSet<>();
-//        List<Integer> list = new ArrayList<>();
-//        for (ItemSet itemSet : itemSets) {
-//            set.add(itemSet.getNumber());
-//            list.add(itemSet.getNumber());
-//        }
-//        System.out.println(itemSets.size());
-//        System.out.println(set.size());
-//        System.out.println(set);
-//        System.out.println(list.size());
-//        list.sort(null);
-//        System.out.println(list);
-//        System.out.println("少: ");
-//        for (int i = 0; i <= 201; i++) {
-//            if (!set.contains(i)) {
-//                System.out.println(i);
-//            }
-//        }
-
-        /**/
+        /* //此处调试bug，未解决：有311个项集，但是它们编号却是0-312，中间有两个编号没用到
+        Set<Integer> set = new HashSet<>();
+        List<Integer> list = new ArrayList<>();
+        for (ItemSet itemSet : itemSets) {
+            set.add(itemSet.getNumber());
+            list.add(itemSet.getNumber());
+        }
+        System.out.println(itemSets.size());
+        System.out.println(set.size());
+        System.out.println(set);
+        System.out.println(list.size());
+        list.sort(null);
+        System.out.println(list);
+        System.out.println("少: ");
+        for (int i = 0; i <= 312; i++) {
+            if (!set.contains(i)) {
+                System.out.println(i);
+            }
+        }
+        */
         for (Map.Entry<Integer, Map<String, Integer>> entry : graph.entrySet()) {
             for (Map.Entry<String, Integer> entry1 : entry.getValue().entrySet()) {
+                // 此处填写GOTO表
                 if (nonTerminals.contains(entry1.getKey())) {
                     Action action = new Action.Builder().status(entry1.getValue()).build();
                     lrTable.setTable(entry.getKey(), entry1.getKey(), action);
                 } else {
+                    // 此处填写ACTION表中的移入动作
                     Action action = new Action.Builder().action("shift").status(entry1.getValue()).build();
                     lrTable.setTable(entry.getKey(), entry1.getKey(), action);
                 }
             }
         }
         for (ItemSet itemSet : itemSets) {
+            // 接收
             if (itemSet.isAccept()) {
                 lrTable.setTable(itemSet.getNumber(), stackBottom, new Action.Builder().action(acceptSymbol).build());
             } else if (itemSet.hasReduceItem()) {
+                // 填写ACTION表中的规约动作
                 Set<Item> reduceItems = itemSet.getReduceItem();
                 for (Item item : reduceItems) {
-                    if (item.getLookahead().equals(emptySymbol)) {
-                        System.out.println(item);
-                    }
                     lrTable.setTable(itemSet.getNumber(), item.getLookahead(),
                             new Action.Builder().action("reduce").production(item.getProduction()).build());
                 }
@@ -140,8 +138,6 @@ public class LrTable {
         }
         System.out.println("LR(1) Table: ");
         System.out.println(lrTable.toString());
-
-
         System.out.println("----------------------");
     }
 
@@ -154,7 +150,6 @@ public class LrTable {
 //            System.out.println(entry.getKey() + ":" + entry.getValue() + "");
 //        }
     }
-
     private Set<String> findFirst(String leftNode, Set<Production> rightNodes) {
         if (firstSet.containsKey(leftNode)) {
             return firstSet.get(leftNode);
@@ -300,11 +295,9 @@ public class LrTable {
                                 }
                             }
                         }
-
                     }
                 }
             }
-
             itemSets.addAll(tempItemSet);
             if (itemSets.size() == size) {
                 break;
@@ -313,8 +306,8 @@ public class LrTable {
     }
 
     public static void main(String[] args) {
-        LrTable lrTable = new LrTable("src/parser/grammar_test1.txt");
-//        LrTable lrTable = new LrTable("src/parser/grammar.txt");
+//        LrTable lrTable = new LrTable("src/parser/grammar_test.txt");
+        LrTable lrTable = new LrTable("src/parser/grammar.txt");
 //        System.out.println("ItemSets: ");
 //        for (ItemSet itemSet : lrTable.itemSets) {
 //            System.out.println(itemSet.toString());

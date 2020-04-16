@@ -64,6 +64,7 @@ public class ItemSet {
         return  stringBuilder.toString();
     }
 
+    // 仅关心itemSet这个集合内容是否相同
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

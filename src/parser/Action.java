@@ -1,6 +1,7 @@
 package parser;
 
 public class Action {
+
     private final String action;
     private final int status;
     private final Production production;
@@ -73,6 +74,7 @@ public class Action {
 
     public static void main(String[] args) {
         Action action = new Builder().status(1).build();
+        Action action3 = new Builder().action("error").build();
         Action action1 = new Builder().action("shift").status(2).build();
         Action action2 = new Builder().action("reduce").production(new Production("S", new String[]{"P"})).build();
         System.out.println(action);

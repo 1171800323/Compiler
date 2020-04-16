@@ -23,3 +23,7 @@ struct student{
     }
     /*函数调用*/
     call getNum(3,5);
+ if (a == b) then 
+ b = 1;
+ else
+ a = c;
