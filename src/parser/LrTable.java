@@ -45,7 +45,7 @@ public class LrTable {
                 for (String string : rightList) {
                     Production product = new Production(left, string.trim().split(" "));
                     productionSet.add(product);
-                    productionMap.putIfAbsent(left, new HashSet<>());
+                    productionMap.putIfAbsent(left, new HashSet<Production>());
                     productionMap.get(left).add(product);
                 }
                 // 非终结符
@@ -88,6 +88,17 @@ public class LrTable {
         return lrTable;
     }
 
+    
+   //返回终结符集合
+    public Set<String> getterminals(){
+        return terminals;
+    }
+
+  //返回非终结符集合
+    public Set<String> getnonterminals(){
+        return nonTerminals;
+    }
+    
     private void constructLrTable() {
         System.out.println("----------------------");
         /* //此处调试bug，未解决：有311个项集，但是它们编号却是0-312，中间有两个编号没用到
@@ -313,6 +324,6 @@ public class LrTable {
 //            System.out.println(itemSet.toString());
 //        }
 //        System.out.println("size: " + lrTable.itemSets.size());
-        System.out.println(lrTable.graph);
+//        System.out.println(lrTable.graph);
     }
 }

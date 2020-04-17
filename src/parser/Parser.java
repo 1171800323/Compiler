@@ -1,55 +1,49 @@
 package parser;
 
 import java.util.ArrayList;
+
 import java.util.List;
 import java.util.Stack;
 
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.Stack;
+
+import javax.swing.tree.DefaultMutableTreeNode;
+
+import lexer.Token;
+
+
 public class Parser {
-    private final LrTable lrTable;
-    private final Table table;
+    private final Table lrTable;
     public static final String shiftSymbol = "shift";
     public static final String reduceSymbol = "reduce";
 
+    private ArrayList<DefaultMutableTreeNode> TreeList = new ArrayList<DefaultMutableTreeNode>();
+
+
     public Parser() {
 //        LrTable table = new LrTable("src/parser/grammar_test.txt");
-        lrTable = new LrTable("src/parser/grammar.txt");
-        table = lrTable.getLrTable();
+        LrTable table = new LrTable("src/parser/grammar.txt");
+        lrTable = table.getLrTable();
 
         List<String> tokens = new ArrayList<>();
-//        tokens.add("id");
-//        tokens.add("[");
-//        tokens.add("num");
-//        tokens.add("]");
-//        tokens.add("=");
-//        tokens.add("num");
-//        tokens.add(";");
-//        tokens.add("int");
-//        tokens.add("id");
-//        tokens.add("=");
-//        tokens.add("real");
-//        tokens.add(";");
-//        tokens.add("return");
-//        tokens.add("real");
-//        tokens.add(";");
-//        tokens.add("if");
-//        tokens.add("(");
-//        tokens.add("true");
-//        tokens.add(")");
-//        tokens.add("then");
-//        tokens.add("id");
-//        tokens.add("=");
-//        tokens.add("real");
-//        tokens.add(";");
-//        tokens.add("else");
-//        tokens.add("id");
-//        tokens.add("=");
-//        tokens.add("real");
-//        tokens.add(";");
-
-        tokens.add("bool");
         tokens.add("id");
+        tokens.add("[");
+        tokens.add("num");
+        tokens.add("]");
         tokens.add("=");
         tokens.add("num");
+        tokens.add(";");
+        tokens.add("int");
+        tokens.add("id");
+        tokens.add("=");
+        tokens.add("real");
+        tokens.add(";");
+        tokens.add("return");
+        tokens.add("real");
         tokens.add(";");
         tokens.add("$");
         handle(tokens);
@@ -67,21 +61,43 @@ public class Parser {
         for (int i = 0; i < tokens.size(); i++) {
             String token = tokens.get(i);
             // 查ACTION表，根据当前状态栈顶符号和token确定动作
-            Action action = table.getAction(statusStack.peek(), token);
+            Action action = lrTable.getAction(statusStack.peek(), token);
             if (statusStack.size() != symbolStack.size()) {
                 // 当状态栈和符号栈数目不同，需要查GOTO表
-                action = table.getAction(statusStack.peek(), symbolStack.peek());
+                action = lrTable.getAction(statusStack.peek(), symbolStack.peek());
             }
             if (action != null) {
                 // 移入动作，同时将token值和状态号进栈
                 if (shiftSymbol.equals(action.getAction())) {
                     statusStack.push(action.getStatus());
                     symbolStack.push(token);
+                    TreeList.add(new DefaultMutableTreeNode(token));
                     System.out.println(action);
                 } else if (reduceSymbol.equals(action.getAction())) {
                     // 规约动作，同时弹出两个栈中内容，最后需要将产生式左部进栈
                     Production production = action.getProduction();
                     int num = production.getRight().size();
+                    DefaultMutableTreeNode lord = new DefaultMutableTreeNode(production.getLeft());    
+                    if(production.isEmptyProduction())
+                        lord.add(new DefaultMutableTreeNode("ε"));
+                    ArrayList<DefaultMutableTreeNode> childlist = new ArrayList<DefaultMutableTreeNode>();
+                    for(int n1=production.getRight().size()-1 ; n1>=0 ; n1--) {
+                        for(int n2=TreeList.size()-1 ; n2>=0 ; n2--){
+                            if(TreeList.get(n2).toString().equals(production.getRight().get(n1)))
+                            {
+                                childlist.add(TreeList.get(n2));
+                                TreeList.remove(n2);
+                                break;
+                            }
+                        }
+                    }
+                    Collections.reverse(childlist);
+                    for(DefaultMutableTreeNode e : childlist)
+                    {
+                        lord.add(e);
+                    }
+                    TreeList.add(lord);
+                    
                     // 空产生式不需弹栈
                     if (production.isEmptyProduction()) {
                         num = 0;
@@ -108,8 +124,15 @@ public class Parser {
         }
     }
 
+
+    
+    public DefaultMutableTreeNode getroot() {
+        return this.TreeList.get(0);
+    }
+    
     public static void main(String[] args) {
 
         new Parser();
+
     }
 }
