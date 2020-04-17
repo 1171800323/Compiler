@@ -56,11 +56,11 @@ public class Item {
         List<String> list = new ArrayList<>(right);
         list.add(location, "·");
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(left + " -> ");
+        stringBuilder.append(left).append(" -> ");
         for (String string : list) {
-            stringBuilder.append(string + " ");
+            stringBuilder.append(string).append(" ");
         }
-        stringBuilder.append(", " + lookahead + "\n");
+        stringBuilder.append(", ").append(lookahead).append("\n");
         return stringBuilder.toString();
     }
 

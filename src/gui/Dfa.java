@@ -6,14 +6,15 @@ import lexer.Graph;
 import javax.swing.*;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
 
 public class Dfa extends JFrame {
-    public Vector<Vector<String>> data = new Vector<Vector<String>>();
-    public Vector<String> Title = new Vector<String>();
+    public Vector<Vector<String>> data = new Vector<>();
+    public Vector<String> Title = new Vector<>();
     private final Graph graph = new Graph("src/dfa.txt");
     private final Set<Integer> State = new TreeSet<>();
 
@@ -34,12 +35,12 @@ public class Dfa extends JFrame {
         }
         Title.add("other");
         for (Integer state : State) {
-            Vector<String> W = new Vector<String>();
+            Vector<String> W = new Vector<>();
 
             String[] s = new String[num + 1];
             s[0] = String.valueOf(state);
             for (Edge edge : graph.getEdges()) {
-                int locataion = -1;
+                int locataion;
                 if (!edge.getWeight().contains("other")) {
                     locataion = Title.indexOf(edge.getWeight());
                 } else {
@@ -61,9 +62,7 @@ public class Dfa extends JFrame {
             if (graph.getEndStates().containsKey(state)) {
                 s[0] += '*';
             }
-            for (int i = 0; i <= num; i++) {
-                W.add(s[i]);
-            }
+            W.addAll(Arrays.asList(s).subList(0, num + 1));
             data.add(W);
         }
         JTable table = new JTable(data, Title);

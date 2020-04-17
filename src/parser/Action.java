@@ -38,9 +38,9 @@ public class Action {
         if ("acc".equals(action)) {
             stringBuilder.append("acc");
         } else if ("reduce".equals(action)) {
-            stringBuilder.append("r: " + production.toString());
+            stringBuilder.append("r: ").append(production.toString());
         } else if ("shift".equals(action)) {
-            stringBuilder.append("s" + status);
+            stringBuilder.append("s").append(status);
         } else {
             stringBuilder.append(status);
         }
@@ -80,6 +80,7 @@ public class Action {
         System.out.println(action);
         System.out.println(action1);
         System.out.println(action2);
+        System.out.println(action3);
 
     }
 }

@@ -10,17 +10,14 @@ import java.util.Enumeration;
 import parser.Parser;
 
 public class DrawSyntaxTree {
-            
-    private static  DefaultMutableTreeNode rootNode;
-    
+
     public DrawSyntaxTree()
     {
        Parser parser = new Parser();
-       rootNode = parser.getroot();
+        DefaultMutableTreeNode rootNode = parser.getRoot();
        JFrame jf = new JFrame("SyntaxTree");
        jf.setSize(400, 800);
        jf.setLocationRelativeTo(null);
-       jf.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
        JPanel panel = new JPanel(new BorderLayout());
        
        JTree tree = new JTree(rootNode);

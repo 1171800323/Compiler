@@ -40,10 +40,10 @@ public class Table {
         stringBuilder.append("\n");
         int number = 0;
         for (Action[] strings : actionTable) {
-            stringBuilder.append("I"+number + "\n");
+            stringBuilder.append("I").append(number).append("\n");
             for (int i = 0; i < strings.length; i++) {
                 if (strings[i] != null) {
-                    stringBuilder.append("(" + tableHead.get(i) + ", " + strings[i] + ")    ");
+                    stringBuilder.append("(").append(tableHead.get(i)).append(", ").append(strings[i]).append(")    ");
                 }
             }
             stringBuilder.append("\n");

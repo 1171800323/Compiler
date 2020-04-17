@@ -4,8 +4,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 
-import parser.Parser;
-
 
 public class Gui {
     private JFrame jFrame;      // frame窗体

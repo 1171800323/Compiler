@@ -45,7 +45,7 @@ public class LrTable {
                 for (String string : rightList) {
                     Production product = new Production(left, string.trim().split(" "));
                     productionSet.add(product);
-                    productionMap.putIfAbsent(left, new HashSet<Production>());
+                    productionMap.putIfAbsent(left, new HashSet<>());
                     productionMap.get(left).add(product);
                 }
                 // 非终结符
@@ -90,12 +90,12 @@ public class LrTable {
 
     
    //返回终结符集合
-    public Set<String> getterminals(){
+    public Set<String> getTerminals(){
         return terminals;
     }
 
   //返回非终结符集合
-    public Set<String> getnonterminals(){
+    public Set<String> getNonTerminals(){
         return nonTerminals;
     }
     
@@ -124,14 +124,14 @@ public class LrTable {
         for (Map.Entry<Integer, Map<String, Integer>> entry : graph.entrySet()) {
             for (Map.Entry<String, Integer> entry1 : entry.getValue().entrySet()) {
                 // 此处填写GOTO表
+                Action action;
                 if (nonTerminals.contains(entry1.getKey())) {
-                    Action action = new Action.Builder().status(entry1.getValue()).build();
-                    lrTable.setTable(entry.getKey(), entry1.getKey(), action);
+                    action = new Action.Builder().status(entry1.getValue()).build();
                 } else {
                     // 此处填写ACTION表中的移入动作
-                    Action action = new Action.Builder().action("shift").status(entry1.getValue()).build();
-                    lrTable.setTable(entry.getKey(), entry1.getKey(), action);
+                    action = new Action.Builder().action("shift").status(entry1.getValue()).build();
                 }
+                lrTable.setTable(entry.getKey(), entry1.getKey(), action);
             }
         }
         for (ItemSet itemSet : itemSets) {
@@ -219,9 +219,7 @@ public class LrTable {
         while (true) {
             int itemsSize = items.size();
             Set<Item> tempItems = new HashSet<>();     // 设置此临时变量，防止遍历items时添加元素，造成错误
-            Iterator<Item> itemIterator = items.iterator();
-            while (itemIterator.hasNext()) {
-                Item item = itemIterator.next();
+            for (Item item : items) {
                 List<String> right = item.getRight();
                 int location = item.getLocation();
                 // 如果相等，则这是一个规约项目，否则，如A -> α · B β , a，还需将B -> · γ, b加入items
@@ -266,7 +264,7 @@ public class LrTable {
 
     private void items() {
         Set<Item> start = new HashSet<>();
-        start.add(new Item(startSymbol, new ArrayList<>(Arrays.asList(startSymbolReal)), 0, stackBottom));
+        start.add(new Item(startSymbol, new ArrayList<>(Collections.singletonList(startSymbolReal)), 0, stackBottom));
         int number = 0;
         // 添加I0项集族
         itemSets.add(new ItemSet(getClosure(start), number));
@@ -278,10 +276,8 @@ public class LrTable {
         while (true) {
             int size = itemSets.size();
             Set<ItemSet> tempItemSet = new HashSet<>();
-            Iterator<ItemSet> iterator = itemSets.iterator();
             // 对每个项集I
-            while (iterator.hasNext()) {
-                ItemSet itemSet = iterator.next();
+            for (ItemSet itemSet : itemSets) {
                 // 对每个文法符号X
                 for (String symbol : symbols) {
                     Set<Item> closure = gotoFunction(itemSet.getItemSet(), symbol);

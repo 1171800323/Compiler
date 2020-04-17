@@ -6,9 +6,6 @@ import javax.swing.*;
 import java.awt.*;
 
 public class Token extends JFrame {
-    private TextArea textToken;
-    private TextArea textError;
-    private Font font = new Font("Consolas", Font.PLAIN, 18);
 
     public Token(String filename){
         setTitle("Token");
@@ -16,7 +13,8 @@ public class Token extends JFrame {
         setVisible(true);
         setResizable(false);
 
-        textToken = new TextArea();
+        TextArea textToken = new TextArea();
+        Font font = new Font("Consolas", Font.PLAIN, 18);
         textToken.setFont(font);
         textToken.setForeground(Color.white);
         textToken.setBackground(Color.BLACK);
@@ -26,7 +24,7 @@ public class Token extends JFrame {
             textToken.append(token.toString()+"\n");
         }
 
-        textError = new TextArea();
+        TextArea textError = new TextArea();
         textError.setFont(font);
         textError.setForeground(Color.red);
         textError.setBackground(Color.BLACK);

@@ -23,19 +23,15 @@ public class Production {
     }
 
     public Boolean isEmptyProduction() {
-        if (right.size() == 1 && right.contains(LrTable.emptySymbol)) {
-            return true;
-        } else {
-            return false;
-        }
+        return right.size() == 1 && right.contains(LrTable.emptySymbol);
     }
 
     @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(left + " -> ");
+        stringBuilder.append(left).append(" -> ");
         for (String string : right) {
-            stringBuilder.append(string + " ");
+            stringBuilder.append(string).append(" ");
         }
         return stringBuilder.toString().trim();
     }

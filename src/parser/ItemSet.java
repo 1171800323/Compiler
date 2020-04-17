@@ -23,7 +23,7 @@ public class ItemSet {
 
     // 该项集是否有规约项目
     public Boolean hasReduceItem() {
-        Boolean flag = false;
+        boolean flag = false;
         for (Item item : itemSet) {
             if (item.isReduceItem()) {
                 flag = true;
@@ -37,10 +37,7 @@ public class ItemSet {
         List<String> right = new ArrayList<>();
         right.add(LrTable.startSymbolReal);
         Item item = new Item(LrTable.startSymbol, right, 1, LrTable.stackBottom);
-        if (itemSet.size() == 1 && itemSet.contains(item)) {
-            return true;
-        }
-        return false;
+        return itemSet.size() == 1 && itemSet.contains(item);
     }
 
     public Set<Item> getReduceItem() {
@@ -54,12 +51,12 @@ public class ItemSet {
     @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("I" + number + ": \n");
+        stringBuilder.append("I").append(number).append(": \n");
         for (Item item : itemSet) {
             stringBuilder.append(item.toString());
         }
         for (Map.Entry<String, Integer> entry : gotoTable.entrySet()){
-            stringBuilder.append("by '" + entry.getKey() + "' go to I" + entry.getValue() + "\n");
+            stringBuilder.append("by '").append(entry.getKey()).append("' go to I").append(entry.getValue()).append("\n");
         }
         return  stringBuilder.toString();
     }

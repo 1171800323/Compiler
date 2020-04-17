@@ -1,27 +1,19 @@
 package parser;
 
+import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.ArrayList;
-
-import java.util.List;
-import java.util.Stack;
-
-
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.Stack;
-
-import javax.swing.tree.DefaultMutableTreeNode;
-
-import lexer.Token;
 
 
 public class Parser {
+
     private final Table lrTable;
     public static final String shiftSymbol = "shift";
     public static final String reduceSymbol = "reduce";
 
-    private ArrayList<DefaultMutableTreeNode> TreeList = new ArrayList<DefaultMutableTreeNode>();
+    private final ArrayList<DefaultMutableTreeNode> TreeList = new ArrayList<>();
 
 
     public Parser() {
@@ -80,7 +72,7 @@ public class Parser {
                     DefaultMutableTreeNode lord = new DefaultMutableTreeNode(production.getLeft());    
                     if(production.isEmptyProduction())
                         lord.add(new DefaultMutableTreeNode("ε"));
-                    ArrayList<DefaultMutableTreeNode> childlist = new ArrayList<DefaultMutableTreeNode>();
+                    ArrayList<DefaultMutableTreeNode> childlist = new ArrayList<>();
                     for(int n1=production.getRight().size()-1 ; n1>=0 ; n1--) {
                         for(int n2=TreeList.size()-1 ; n2>=0 ; n2--){
                             if(TreeList.get(n2).toString().equals(production.getRight().get(n1)))
@@ -124,15 +116,12 @@ public class Parser {
         }
     }
 
-
-    
-    public DefaultMutableTreeNode getroot() {
+    public DefaultMutableTreeNode getRoot() {
         return this.TreeList.get(0);
     }
-    
+
     public static void main(String[] args) {
 
         new Parser();
-
     }
 }

@@ -29,12 +29,12 @@ public class Graph {
                     str = str.substring(9);
                     String[] endstate = str.split(" ");
 
-                    for (int i = 0;i<endstate.length ; i++){
-                        String[] temp = endstate[i].split("#") ;
+                    for (String s : endstate) {
+                        String[] temp = s.split("#");
                         int a = Integer.parseInt(temp[0].substring(1)); // 截取，不要第一个字符，就是左括号
-                        String b = temp[1].substring(0,temp[1].length()-1) ; // 截取，不要后面的右括号
+                        String b = temp[1].substring(0, temp[1].length() - 1); // 截取，不要后面的右括号
 //                        System.out.println(b);
-                        endStates.put(a,Tag.fromString(b)) ;
+                        endStates.put(a, Tag.fromString(b));
                     }
                 }
                 // 这一行不是标识终结状态行，是普通的一行，就有起点终点边
@@ -73,7 +73,7 @@ public class Graph {
     public int getTarget(int source, char ch) {
         int target = -1;
         Set<Character> sets  ;
-        Boolean flag = false;
+        boolean flag = false;
 
         for (Edge edge : edges) {
             if (edge.getSource() == source) {
