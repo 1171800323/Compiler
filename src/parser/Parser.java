@@ -5,30 +5,51 @@ import java.util.List;
 import java.util.Stack;
 
 public class Parser {
-    private final Table lrTable;
+    private final LrTable lrTable;
+    private final Table table;
     public static final String shiftSymbol = "shift";
     public static final String reduceSymbol = "reduce";
 
     public Parser() {
 //        LrTable table = new LrTable("src/parser/grammar_test.txt");
-        LrTable table = new LrTable("src/parser/grammar.txt");
-        lrTable = table.getLrTable();
+        lrTable = new LrTable("src/parser/grammar.txt");
+        table = lrTable.getLrTable();
 
         List<String> tokens = new ArrayList<>();
+//        tokens.add("id");
+//        tokens.add("[");
+//        tokens.add("num");
+//        tokens.add("]");
+//        tokens.add("=");
+//        tokens.add("num");
+//        tokens.add(";");
+//        tokens.add("int");
+//        tokens.add("id");
+//        tokens.add("=");
+//        tokens.add("real");
+//        tokens.add(";");
+//        tokens.add("return");
+//        tokens.add("real");
+//        tokens.add(";");
+//        tokens.add("if");
+//        tokens.add("(");
+//        tokens.add("true");
+//        tokens.add(")");
+//        tokens.add("then");
+//        tokens.add("id");
+//        tokens.add("=");
+//        tokens.add("real");
+//        tokens.add(";");
+//        tokens.add("else");
+//        tokens.add("id");
+//        tokens.add("=");
+//        tokens.add("real");
+//        tokens.add(";");
+
+        tokens.add("bool");
         tokens.add("id");
-        tokens.add("[");
-        tokens.add("num");
-        tokens.add("]");
         tokens.add("=");
         tokens.add("num");
-        tokens.add(";");
-        tokens.add("int");
-        tokens.add("id");
-        tokens.add("=");
-        tokens.add("real");
-        tokens.add(";");
-        tokens.add("return");
-        tokens.add("real");
         tokens.add(";");
         tokens.add("$");
         handle(tokens);
@@ -46,10 +67,10 @@ public class Parser {
         for (int i = 0; i < tokens.size(); i++) {
             String token = tokens.get(i);
             // 查ACTION表，根据当前状态栈顶符号和token确定动作
-            Action action = lrTable.getAction(statusStack.peek(), token);
+            Action action = table.getAction(statusStack.peek(), token);
             if (statusStack.size() != symbolStack.size()) {
                 // 当状态栈和符号栈数目不同，需要查GOTO表
-                action = lrTable.getAction(statusStack.peek(), symbolStack.peek());
+                action = table.getAction(statusStack.peek(), symbolStack.peek());
             }
             if (action != null) {
                 // 移入动作，同时将token值和状态号进栈

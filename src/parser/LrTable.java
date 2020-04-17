@@ -45,7 +45,7 @@ public class LrTable {
                 for (String string : rightList) {
                     Production product = new Production(left, string.trim().split(" "));
                     productionSet.add(product);
-                    productionMap.putIfAbsent(left, new HashSet<Production>());
+                    productionMap.putIfAbsent(left, new HashSet<>());
                     productionMap.get(left).add(product);
                 }
                 // 非终结符
@@ -313,6 +313,6 @@ public class LrTable {
 //            System.out.println(itemSet.toString());
 //        }
 //        System.out.println("size: " + lrTable.itemSets.size());
-//        System.out.println(lrTable.graph);
+        System.out.println(lrTable.graph);
     }
 }
