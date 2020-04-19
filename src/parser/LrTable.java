@@ -1,5 +1,7 @@
 package parser;
 
+import lexer.Row;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -32,6 +34,65 @@ public class LrTable {
 
     // LR(1)分析表
     private final Table lrTable;
+
+    //follow集合
+    public  final Map<String, Set<String> > followSet = new HashMap<>() ;
+    private final List<Row> lines = new ArrayList<>();
+
+    //返回follow
+    public Map<String, Set<String> > getFollowSet(){
+        String filename = "src/parser/follow.txt";
+        readFile(filename);
+        for (int i = 0;i<lines.size();i++){
+            Row row=lines.get(i) ;
+            String[] line = row.getLine().split(" ") ;
+            String key = line[0];
+            Set<String > set = new HashSet<>();
+            for (int j = 1;j<line.length;j++){
+                set.add(line[j]);
+            }
+            followSet.put(key,set);
+        }
+
+        return  this.followSet;
+    }
+
+
+
+
+
+
+
+    /**
+     * follow
+     *
+     * @param filename 文件地址+文件名
+     */
+    private void readFile(String filename) {
+        String str;
+        int line = 0;
+        try (FileInputStream inputStream = new FileInputStream(filename);
+             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
+            while ((str = bufferedReader.readLine()) != null) {
+                line++;
+                lines.add(new Row(line, str));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    /**
+     *
+     * @return
+     */
+    public Map<Integer, Map<String, Integer>> getGraph() {
+        return graph;
+    }
+
+
+
 
     public LrTable(String filename) {
         try (FileInputStream inputStream = new FileInputStream(filename);

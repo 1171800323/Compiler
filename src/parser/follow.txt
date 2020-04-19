@@ -1,0 +1,17 @@
+P }
+D call return if int proc do id float char struct bool }
+T id
+X id [
+C id
+A ;
+M , )
+S return $ int proc id } call if while do float else char struct bool
+L = [ 
+E ) + || && ; , < > <= >= != ==
+G ) + || && ; , < > <= >= != == *
+F ) + || && ; , < > <= >= != == *
+B ) ||
+H ) || &&
+I ) || &&
+relop real num ( character id
+Elist , )

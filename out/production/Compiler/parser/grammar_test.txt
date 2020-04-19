@@ -1,0 +1,3 @@
+Program -> P
+P -> a B d 丨 ε
+B -> P b 丨 ε
