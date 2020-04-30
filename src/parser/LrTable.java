@@ -50,7 +50,6 @@ public class LrTable {
                 }
                 // 非终结符
                 nonTerminals.add(left);
-
             }
             for (Production production : productionSet) {
                 List<String> rightList = production.getRight();
@@ -62,7 +61,6 @@ public class LrTable {
                 }
             }
             terminals.add(stackBottom);
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -88,39 +86,10 @@ public class LrTable {
         return lrTable;
     }
 
-    
-   //返回终结符集合
-    public Set<String> getTerminals(){
-        return terminals;
-    }
 
-  //返回非终结符集合
-    public Set<String> getNonTerminals(){
-        return nonTerminals;
-    }
-    
     private void constructLrTable() {
         System.out.println("----------------------");
-        /* //此处调试bug，未解决：有311个项集，但是它们编号却是0-312，中间有两个编号没用到
-        Set<Integer> set = new HashSet<>();
-        List<Integer> list = new ArrayList<>();
-        for (ItemSet itemSet : itemSets) {
-            set.add(itemSet.getNumber());
-            list.add(itemSet.getNumber());
-        }
-        System.out.println(itemSets.size());
-        System.out.println(set.size());
-        System.out.println(set);
-        System.out.println(list.size());
-        list.sort(null);
-        System.out.println(list);
-        System.out.println("少: ");
-        for (int i = 0; i <= 312; i++) {
-            if (!set.contains(i)) {
-                System.out.println(i);
-            }
-        }
-        */
+
         for (Map.Entry<Integer, Map<String, Integer>> entry : graph.entrySet()) {
             for (Map.Entry<String, Integer> entry1 : entry.getValue().entrySet()) {
                 // 此处填写GOTO表
@@ -156,10 +125,6 @@ public class LrTable {
         for (String noTerminal : nonTerminals) {
             findFirst(noTerminal, productionMap.get(noTerminal));
         }
-//        System.out.println("firstSet: ");
-//        for (Map.Entry<String, Set<String>> entry : firstSet.entrySet()) {
-//            System.out.println(entry.getKey() + ":" + entry.getValue() + "");
-//        }
     }
     private Set<String> findFirst(String leftNode, Set<Production> rightNodes) {
         if (firstSet.containsKey(leftNode)) {

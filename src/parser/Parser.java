@@ -26,17 +26,20 @@ public class Parser {
         tokens.add("[");
         tokens.add("num");
         tokens.add("]");
+        tokens.add("[");
+        tokens.add("num");
+        tokens.add("]");
         tokens.add("=");
         tokens.add("num");
         tokens.add(";");
-        tokens.add("int");
-        tokens.add("id");
-        tokens.add("=");
-        tokens.add("real");
-        tokens.add(";");
-        tokens.add("return");
-        tokens.add("real");
-        tokens.add(";");
+//        tokens.add("int");
+//        tokens.add("id");
+//        tokens.add("=");
+//        tokens.add("real");
+//        tokens.add(";");
+//        tokens.add("return");
+//        tokens.add("real");
+//        tokens.add(";");
         tokens.add("$");
         handle(tokens);
     }
