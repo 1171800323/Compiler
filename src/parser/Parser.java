@@ -1,65 +1,63 @@
 package parser;
 
+import lexer.Lexer;
+import lexer.Tag;
+import lexer.Token;
+
 import javax.swing.tree.DefaultMutableTreeNode;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 
 public class Parser {
-
-    private final Table lrTable;
     public static final String shiftSymbol = "shift";
     public static final String reduceSymbol = "reduce";
+    public final LrTable lrtable = new LrTable("src/parser/grammar.txt");
+    private final Table table;
+    private final Map<String, Set<String>> followSetMap;
+    public static List<Integer> lineno = new ArrayList<>(); //保存每一个的行号
+    private final List<String> errorMessages = new ArrayList<>();
 
     private final ArrayList<DefaultMutableTreeNode> TreeList = new ArrayList<>();
 
+    // 状态栈和符号栈
+    private final Stack<Integer> statusStack = new Stack<>();
+    private final Stack<String> symbolStack = new Stack<>();
 
-    public Parser() {
-//        LrTable table = new LrTable("src/parser/grammar_test.txt");
-        LrTable table = new LrTable("src/parser/grammar.txt");
-        lrTable = table.getLrTable();
+    private final List<String> tokens;
 
-        List<String> tokens = new ArrayList<>();
-        tokens.add("id");
-        tokens.add("[");
-        tokens.add("num");
-        tokens.add("]");
-        tokens.add("[");
-        tokens.add("num");
-        tokens.add("]");
-        tokens.add("=");
-        tokens.add("num");
-        tokens.add(";");
-//        tokens.add("int");
-//        tokens.add("id");
-//        tokens.add("=");
-//        tokens.add("real");
-//        tokens.add(";");
-//        tokens.add("return");
-//        tokens.add("real");
-//        tokens.add(";");
-        tokens.add("$");
-        handle(tokens);
-    }
-
-    private void handle(List<String> tokens) {
-
-        // 状态栈和符号栈
-        final Stack<Integer> statusStack = new Stack<>();
-        final Stack<String> symbolStack = new Stack<>();
+    public Parser(String filename) {
+        // 初始化栈
         statusStack.push(0);
         symbolStack.push(LrTable.stackBottom);
 
+        // 词法分析
+        Lexer lexer = new Lexer(filename);
+        table = lrtable.getLrTable();
+        lineno = lexer.getLineno();  //这一步是获得对应的行号
+        tokens = tokenChange(lexer.getTokens());  //获得解析后的tokens
+
+        // 语法分析
+        followSetMap = lrtable.getFollowSet();
+        handle(tokens);
+
+        // 错误信息
+        for (String err : errorMessages) {
+            System.err.println(err);
+        }
+    }
+
+    private void handle(List<String> tokens) {
         // 一遍扫描
         for (int i = 0; i < tokens.size(); i++) {
             String token = tokens.get(i);
+            if (statusStack.empty()) {
+                return;
+            }
             // 查ACTION表，根据当前状态栈顶符号和token确定动作
-            Action action = lrTable.getAction(statusStack.peek(), token);
+            Action action = table.getAction(statusStack.peek(), token);
             if (statusStack.size() != symbolStack.size()) {
                 // 当状态栈和符号栈数目不同，需要查GOTO表
-                action = lrTable.getAction(statusStack.peek(), symbolStack.peek());
+                action = table.getAction(statusStack.peek(), symbolStack.peek());
             }
             if (action != null) {
                 // 移入动作，同时将token值和状态号进栈
@@ -71,28 +69,11 @@ public class Parser {
                 } else if (reduceSymbol.equals(action.getAction())) {
                     // 规约动作，同时弹出两个栈中内容，最后需要将产生式左部进栈
                     Production production = action.getProduction();
+
+                    // 语法树
+                    paintTree(production);
+
                     int num = production.getRight().size();
-                    DefaultMutableTreeNode lord = new DefaultMutableTreeNode(production.getLeft());    
-                    if(production.isEmptyProduction())
-                        lord.add(new DefaultMutableTreeNode("ε"));
-                    ArrayList<DefaultMutableTreeNode> childlist = new ArrayList<>();
-                    for(int n1=production.getRight().size()-1 ; n1>=0 ; n1--) {
-                        for(int n2=TreeList.size()-1 ; n2>=0 ; n2--){
-                            if(TreeList.get(n2).toString().equals(production.getRight().get(n1)))
-                            {
-                                childlist.add(TreeList.get(n2));
-                                TreeList.remove(n2);
-                                break;
-                            }
-                        }
-                    }
-                    Collections.reverse(childlist);
-                    for(DefaultMutableTreeNode e : childlist)
-                    {
-                        lord.add(e);
-                    }
-                    TreeList.add(lord);
-                    
                     // 空产生式不需弹栈
                     if (production.isEmptyProduction()) {
                         num = 0;
@@ -115,16 +96,189 @@ public class Parser {
                     // 指针不移动
                     i--;
                 }
+            } else {
+                //错误处理
+                i = parserErrorHandle(token, i);
             }
         }
+    }
+
+    /**
+     * 将词法分析获得的token，变成语法分析需要的形式token
+     */
+    public List<String> tokenChange(List<Token> tokens) {
+        List<String> stringTokens = new ArrayList<>();
+        for (Token token : tokens) {
+            if (token.tag == Tag.OCT || token.tag == Tag.HEX) {
+                stringTokens.add("num");
+            } else if (token.tag != Tag.NOTE) {
+                stringTokens.add(token.tag.getValue());
+            }
+        }
+        stringTokens.add("$");
+        return stringTokens;
+    }
+
+    private void paintTree(Production production) {
+        DefaultMutableTreeNode lord = new DefaultMutableTreeNode(production.getLeft());
+        if (production.isEmptyProduction())
+            lord.add(new DefaultMutableTreeNode("ε"));
+        ArrayList<DefaultMutableTreeNode> childList = new ArrayList<>();
+        for (int n1 = production.getRight().size() - 1; n1 >= 0; n1--) {
+            for (int n2 = TreeList.size() - 1; n2 >= 0; n2--) {
+                if (TreeList.get(n2).toString().equals(production.getRight().get(n1))) {
+                    childList.add(TreeList.get(n2));
+                    TreeList.remove(n2);
+                    break;
+                }
+            }
+        }
+        Collections.reverse(childList);
+        for (DefaultMutableTreeNode e : childList) {
+            lord.add(e);
+        }
+        TreeList.add(lord);
     }
 
     public DefaultMutableTreeNode getRoot() {
         return this.TreeList.get(0);
     }
 
-    public static void main(String[] args) {
+    private int parserErrorHandle(String token, int i) {
+        System.out.println(i);
+        if (i == tokens.size() - 1) {
+            errorMessages.add("Error at Line [" + "末尾" + "]:  '" + token + "' ");
+            return i;
+        }
+        //错误位置
+        int line1 = lineno.get(i - 1);
+        int line2 = lineno.get(i);
+        if (line1 == line2) {
+            errorMessages.add("Error at Line [" + line1 + "]:  '" + token + "' ");
+        } else if (line1 < line2) {
+            errorMessages.add("Error at Line [" + line1 + "~" + line2 + "]:  " + "  " + token);
+        }
 
-        new Parser();
+        // 赋值语句缺少分号
+        if (symbolStack.get(symbolStack.size() - 2).equals("=") && (symbolStack.peek().equals("id") || symbolStack.peek().equals("real") ||
+                symbolStack.peek().equals("num") || symbolStack.peek().equals("character")) && line2 > line1) {
+            tokens.add(i, ";");
+            lineno.add(i, line1);
+            i = i - 1;
+            return i;
+        }
+        // 重复
+        else if (symbolStack.peek().equals(token) && !token.equals("(") && !token.equals(")") && !token.equals("{") && !token.equals("}")) {
+            tokens.remove(i);
+            lineno.remove(i);
+            i = i - 1;
+            return i;
+        }
+        // 缺少 if 后面左括号
+        else if (symbolStack.peek().equals("if") && !token.equals("(")) {
+            tokens.add(i, "(");
+            lineno.add(i, line1);
+            i = i - 1;
+            return i;
+        }
+        // 结构体缺少左大括号
+        else if (symbolStack.peek().equals("id") && !token.equals("(") && symbolStack.get(symbolStack.size() - 2).equals("struct")) {
+            tokens.add(i, "{");
+            lineno.add(i, line1);
+            i = i - 1;
+            return i;
+        }
+        // 缺少右括号
+        Action action1 = table.getAction(statusStack.peek(), ")");
+        if (action1 != null && action1.getAction().equals(reduceSymbol)) {
+            tokens.add(i, ")");
+            lineno.add(i, line1);
+            i = i - 1;
+            return i;
+        }
+        // 缺少右大括号
+        Action action2 = table.getAction(statusStack.peek(), "}");
+        if (action2 != null && action2.getAction().equals(reduceSymbol)) {
+            tokens.add(i, "}");
+            lineno.add(i, line1);
+            i = i - 1;
+            return i;
+        }
+        // 缺少右中括号
+        Action action3 = table.getAction(statusStack.peek(), "]");
+        if (action3 != null && action3.getAction().equals(reduceSymbol)) {
+            tokens.add(i, "]");
+            lineno.add(i, line1);
+            i = i - 1;
+            return i;
+        }
+
+        //如果不满足常见的几种错误
+        int state = statusStack.peek();
+        Set<String> nonTerminals = lrtable.getNonTerminals(); //非终结符集合
+
+        //如果是空，说明这个项集里面全是规约状态，接着往前找
+        if (lrtable.getGraph().get(state) == null) {
+            statusStack.pop();
+            symbolStack.pop();
+            state = statusStack.peek();//state永远指向栈顶
+        }
+
+        // 进行操作，看看是否含有非中介符。前一个set会保留交集，第二个set不变
+        nonTerminals.retainAll(lrtable.getGraph().get(state).keySet());
+        while (nonTerminals.isEmpty()) {
+            //当GOTO表中没有这个可去的状态时，也就是终结符交集是空,接着往前找
+            statusStack.pop();
+            symbolStack.pop();
+
+            if (statusStack.empty()) {
+                break;
+            }
+
+            state = statusStack.peek();
+            nonTerminals = lrtable.getNonTerminals();
+            nonTerminals.retainAll(lrtable.getGraph().get(state).keySet());
+        }
+
+        //到这里来，找到一个状态，他的非终结符集合交集不空了，
+        String A;
+        int nextState;
+        Map<String, Integer> map = lrtable.getGraph().get(state);
+        for (String s : nonTerminals) {
+            A = s;
+            int j = i;
+            nextState = map.get(A);
+            boolean isflag = false;
+
+            while (j < i + 3) {
+                statusStack.push(nextState);
+                symbolStack.push(A);
+                if (j >= tokens.size()) {
+                    return i;
+                }
+                if (followSetMap.get(A).contains(tokens.get(j))) {
+                    isflag = true;
+                    break;
+                } else {
+                    statusStack.pop();
+                    symbolStack.pop();
+                    j++;
+                }
+            }
+            if (isflag) {
+                i = i + (j - i) - 1;
+                break;
+            } else {
+                //这个不符合条件，就把刚才加进去的再出去.然后开启下次循环
+                statusStack.pop();
+                symbolStack.pop();
+            }
+        }
+        return i;
+    }
+
+
+    public static void main(String[] args) {
+        new Parser("test/ex1.txt");
     }
 }

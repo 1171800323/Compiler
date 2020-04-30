@@ -74,13 +74,12 @@ public class Action {
 
     public static void main(String[] args) {
         Action action = new Builder().status(1).build();
-        Action action3 = new Builder().action("error").build();
         Action action1 = new Builder().action("shift").status(2).build();
         Action action2 = new Builder().action("reduce").production(new Production("S", new String[]{"P"})).build();
+        Action action3 = new Builder().action("error").build();
         System.out.println(action);
         System.out.println(action1);
         System.out.println(action2);
         System.out.println(action3);
-
     }
 }

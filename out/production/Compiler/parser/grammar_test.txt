@@ -1,6 +1,11 @@
 Program -> P
+<<<<<<< HEAD
 P -> D P 丨 ε
 D -> T id A ;
 T -> X
 X -> int 丨 float 丨 bool 丨 char
 A ->  ε
+=======
+P -> a B d 丨 ε
+B -> P b 丨 ε
+>>>>>>> 78e20df7e16f041e0bb4341c503568b95b95923a

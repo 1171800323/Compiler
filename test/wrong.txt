@@ -1,0 +1,26 @@
+
+struct student
+    int id ;
+    char[10] name ;
+}
+    int int  a = 10 ;
+    a = x + y;
+    float f = 1e2;
+    bool flag =    ;
+    int d = 0 ;
+
+    do
+        if  (a == c then
+                d = 1;
+            else
+                d = 2
+    while (a < 20) ;
+
+    float f = 10.0;
+    /* 声明 */
+    proc int function(int x, int y){
+         y = x + 1;
+         return y;
+    }
+    /* 调用 */
+    call function(a, d);
