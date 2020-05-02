@@ -41,9 +41,9 @@ public class LrTable {
 
     //返回follow
     public Map<String, Set<String> > getFollowSet(){
-        String filename = "src/parser/follow.txt";
+        String filename = "src/parser/follow.txt"; //路径
         readFile(filename);
-        for (int i = 0;i<lines.size();i++){
+        for (int i = 0; i<lines.size();i++){
             Row row=lines.get(i) ;
             String[] line = row.getLine().split(" ") ;
             String key = line[0];

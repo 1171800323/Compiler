@@ -1,4 +1,4 @@
-Program -> P
+﻿Program -> P
 P -> D P 丨 S P 丨 ε
 D -> T id A ; 丨 struct id { P } 丨 proc X id ( M ) { P }
 T -> X C
