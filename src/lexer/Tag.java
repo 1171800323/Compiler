@@ -24,7 +24,7 @@ public enum Tag {
     }
 
     public String getValue() {
-        return this.getValue();
+        return value;
     }
 
     /**
@@ -38,5 +38,9 @@ public enum Tag {
                 return t;
         }
         return null;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(THEN.value);
     }
 }

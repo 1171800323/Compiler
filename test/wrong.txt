@@ -1,4 +1,4 @@
-
+/*  zhushi */
 struct student
     int id ;
     char[10] name ;

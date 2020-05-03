@@ -10,7 +10,7 @@
 //import java.util.*;
 //
 //// TODO 增加对错误信息的处理
-//public class Parser {
+//public class huojuParser {
 //    public static final String PRODUCE_START_STATE = "Start";   // 增广文法的开始符号
 //    public static final String START_STATE = "P";   // 真正的开始符号
 //    public static final String ACCEPT_STRING = "acc";   // 接收符号
@@ -1407,7 +1407,7 @@
 //    }
 //
 //    private SymbolItem lookUpSymbolTable(String lexeme, SymbolBoard table) {
-//        SymbolItem ans = null;
+//        SymbolItem ans = null ;
 //        for (; table != null; table = table.getPrev()) {
 //            ans = table.getSymbolItem(lexeme);
 //            if (ans != null)

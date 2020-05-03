@@ -3,7 +3,6 @@ package lexer;
 
 import exception.LexerException;
 
-import javax.sound.midi.Soundbank;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -18,7 +17,7 @@ public class Lexer {
 
     private final List<Row> lines = new ArrayList<>();
     private final List<Token> tokens = new ArrayList<>();
-    private final List<Integer> linesnum = new ArrayList<>(); // 存储这个每一个token对应的行号
+    private final List<Integer> lineno = new ArrayList<>(); // 存储这个每一个token对应的行号
 
     private final Graph graph = new Graph("src/dfa.txt");
     private final List<LexerException> errors = new ArrayList<>();
@@ -28,8 +27,8 @@ public class Lexer {
         findTokens();
     }
 
-    public List<Integer> getLinesnum() {
-        return linesnum;
+    public List<Integer> getLineno() {
+        return lineno;
     }
 
     /**
@@ -37,18 +36,17 @@ public class Lexer {
      */
     private void findTokens() {
         int s = 1;
-        int olds = 1;
+        int olds;
         Map<Integer, Tag> endStates = graph.getEndStates();
         //对于每一行
-        String temp = "";
-        int startline = 0 ;
+        StringBuilder temp = new StringBuilder();
 
         //        for (Row row : lines) {
-        for (int j = 0;j<lines.size();j++){
+        for (int j = 0; j < lines.size(); j++) {
 
-            Row row=lines.get(j) ;
+            Row row = lines.get(j);
             String line = row.getLine();
-            int linenum = row.getNum() ;
+            int lineno = row.getNum();
             int i = 0;
 
 
@@ -57,51 +55,50 @@ public class Lexer {
                 olds = s;
                 s = graph.getTarget(olds, c);
 
-
-
                 // 如果跳转之后在起始状态，说明读入的是纯空格，就可以跳过他。
                 if (s == 1) {
                     i++;
                     continue;
                 }
-                startline = row.getNum() ;
-                temp = temp + c; // 这就是设置一个缓存，在到达终结转态之前. 把读取的字符保留成一串
+                temp.append(c); // 这就是设置一个缓存，在到达终结转态之前. 把读取的字符保留成一串
 
                 // 如果从某一个位置开始读，出错了，返回值是-1， 记录错误位置
                 if (s == -1) {
-                    int errline = linenum ;
+                    int errline = lineno;
                     boolean firstflag = true;
-                    for(int k = 0;k<i;k++){
-                        if(line.charAt(k) != ' ' &&line.charAt(k) != '\t'  ){
+                    for (int k = 0; k < i; k++) {
+                        if (line.charAt(k) != ' ' && line.charAt(k) != '\t') {
                             firstflag = false;
+                            break;
                         }
                     }
 
-                    if(firstflag == true){
-                        errline = lines.get(j-1).getNum();
+                    if (firstflag) {
+                        errline = lines.get(j - 1).getNum();
                     }
-                    errors.add(new LexerException(temp, errline, i));
-                    System.err.println( errline+ "  "+ i);
-                    temp = "";
+                    errors.add(new LexerException(temp.toString(), errline, i));
+                    System.err.println(errline + "  " + i);
+                    temp = new StringBuilder();
                     s = 1;
-                    if (olds != 1){ // 如果原始状态是1，遇见非法字符不可以回退，其他状态可以回退一个字符
+                    if (olds != 1) { // 如果原始状态是1，遇见非法字符不可以回退，其他状态可以回退一个字符
                         i--;
                     }
                 }
 
                 // 如果下一个是终结状态
-                if (endStates.keySet().contains(s)) {
+                if (endStates.containsKey(s)) {
 
                     boolean firstflag = true;
-                    for(int k = 0;k<i;k++){
-                        if(line.charAt(k) != ' '){
+                    for (int k = 0; k < i; k++) {
+                        if (line.charAt(k) != ' ') {
                             firstflag = false;
+                            break;
                         }
                     }
 
-                    int endline = linenum ;
-                    if(firstflag == true){
-                        endline = lines.get(j-1).getNum();
+                    int endline = lineno;
+                    if (firstflag) {
+                        endline = lines.get(j - 1).getNum();
                     }
 
                     int otherflag = 0;
@@ -113,7 +110,7 @@ public class Lexer {
                             String symbol = temp.substring(0, temp.length() - 1);
                             System.out.println(symbol);
                             addToken(symbol, s, endline);
-                            temp = "";
+                            temp = new StringBuilder();
                             otherflag = 1;
                             s = 1;        // 状态归一
                             i = i - 1;
@@ -121,14 +118,13 @@ public class Lexer {
                         }
                     }
                     if (otherflag == 0) {
-                        String symbol = temp;
+                        String symbol = temp.toString();
                         System.out.println(symbol);
-                        addToken(symbol, s, endline );
+                        addToken(symbol, s, endline);
                         s = 1;           // 状态归一
-                        temp = "";
+                        temp = new StringBuilder();
                     }
                 }
-
                 i++;
             }
         }
@@ -140,38 +136,32 @@ public class Lexer {
      * @param symbol 接收单词
      * @param state  接收状态
      */
-    private void addToken(String symbol, int state,int line) {
+    private void addToken(String symbol, int state, int line) {
 
+        lineno.add(line);
         Tag tag = graph.getEndStates().get(state);
         switch (tag) {
             case ID:
                 if (graph.isKeyWord(symbol)) {
                     tokens.add(new Token(Tag.fromString(symbol)));
-                    linesnum.add(line);
                     return;
                 }
             case NOTE:
             case CHARACTER:
                 tokens.add(new Word(symbol, tag));
-                linesnum.add(line);
                 break;
             case NUM:
             case OCT:
             case HEX:
                 tokens.add(new Num(parseToNum(symbol), tag));
-                linesnum.add(line);
                 break;
             case REAL:
                 tokens.add(new Real(parseToReal(symbol)));
-                linesnum.add(line);
                 break;
             default:
                 tokens.add(new Token(tag));
-                linesnum.add(line);
                 break;
         }
-
-
     }
 
     /**
@@ -181,7 +171,7 @@ public class Lexer {
      * @return 字符串的值
      */
     private int parseToNum(String symbol) {
-        int result = 0, n = 0;
+        int result = 0, n;
         // 十六进制
         if (symbol.contains("x") || symbol.contains("X")) {
             // 注意消去0x，所以从 i = 2 开始
@@ -216,7 +206,6 @@ public class Lexer {
         return result;
     }
 
-
     /**
      * 将字符串常数解析成float
      *
@@ -225,11 +214,8 @@ public class Lexer {
      */
     private double parseToReal(String symbol) {
         BigDecimal bd = new BigDecimal(symbol);
-        double result = Double.parseDouble(bd.toPlainString());
-        return result;
+        return Double.parseDouble(bd.toPlainString());
     }
-
-
 
     /**
      * 读取测试用例的方法
@@ -250,20 +236,16 @@ public class Lexer {
         }
     }
 
-    public List<Row> getLines() {
-        return this.lines;
-    }
-
     public List<Token> getTokens() {
         return this.tokens;
     }
 
     public String getErrors() {
-        String s = "";
+        StringBuilder s = new StringBuilder();
         for (LexerException lexerException : errors) {
-            s += lexerException.getMessage() + "\n";
+            s.append(lexerException.getMessage()).append("\n");
         }
-        return s;
+        return s.toString();
     }
 
     public static void main(String[] args) {

@@ -6,20 +6,19 @@ import java.io.*;
 
 
 public class Gui {
-    private JFrame jFrame;      // frame窗体
-    private JMenuBar menuBar;   // 菜单栏
-    private TextArea textArea;  // 文字区
-    private JMenu fileMenu, lexerMenu, parserMenu;  // 一级菜单项
+    private final JFrame jFrame;      // frame窗体
+    private final TextArea textArea;  // 文字区
 
+    private final JMenuItem openItem;
+    private final JMenuItem saveItem;
+    private final JMenuItem exitItem;
+    private final JMenuItem dfaItem;
+    private final JMenuItem tokenItem;
+    private final JMenuItem lrTableItem;
+    private final JMenuItem syntax_treeItem; // 二级菜单项
 
-    private JMenuItem openItem, saveItem, exitItem, dfaItem, tokenItem, lrtableItem, syntax_treeItem; // 二级菜单项
-
-
-    private FileDialog openDialog, saveDialog;      // 文件对话框
+    private FileDialog openDialog;
     private File file = null;                       // 打开的文件
-
-    private Font font1 = new Font("Consolas", Font.PLAIN, 16);  // 字体
-    private Font font2 = new Font("Consolas", Font.PLAIN, 18);
 
     public Gui() {
         jFrame = new JFrame("Compiler");
@@ -29,22 +28,27 @@ public class Gui {
         jFrame.setResizable(false);
 
         // 设置菜单字体
+        // 字体
+        Font font1 = new Font("Consolas", Font.PLAIN, 16);
         UIManager.put("Menu.font", font1);
         UIManager.put("MenuItem.font", font1);
 
         // 创建菜单栏menubar
-        menuBar = new JMenuBar();
+        // 菜单栏
+        JMenuBar menuBar = new JMenuBar();
 
         // 创建文本域
         textArea = new TextArea();
+        Font font2 = new Font("Consolas", Font.PLAIN, 18);
         textArea.setFont(font2);
         textArea.setForeground(Color.white);
         textArea.setBackground(Color.BLACK);
 
         // 创建菜单项menu
-        fileMenu = new JMenu("File");
-        lexerMenu = new JMenu("Lexer");
-        parserMenu = new JMenu("Parser");
+        JMenu fileMenu = new JMenu("File");
+        JMenu lexerMenu = new JMenu("Lexer");
+        // 一级菜单项
+        JMenu parserMenu = new JMenu("Parser");
 
         // 为"File"菜单项设置"Open","Save","Exit"按钮
         openItem = new JMenuItem("Open");
@@ -71,12 +75,12 @@ public class Gui {
 
 
         //为"Parser"菜单设置按钮
-        lrtableItem = new JMenuItem("LrTable");
+        lrTableItem = new JMenuItem("LrTable");
         syntax_treeItem = new JMenuItem("SyntaxTree");
         
         //为"Parser"设置监听
         parserMenuEvent();
-        parserMenu.add(lrtableItem);
+        parserMenu.add(lrTableItem);
         parserMenu.add(syntax_treeItem);
 
         // 添加菜单项到menubar
@@ -102,13 +106,12 @@ public class Gui {
         tokenItem.addActionListener(e -> new Token(file.getAbsolutePath()));
     }
 
-    
     private void parserMenuEvent() {
         //打印输出LR(1)分析表
-        lrtableItem.addActionListener(e -> new DrawLrTable());
+        lrTableItem.addActionListener(e -> new DrawLrTable());
         
         //打印输出语法树
-        syntax_treeItem.addActionListener(e -> new DrawSyntaxTree());
+        syntax_treeItem.addActionListener(e -> new DrawSyntaxTree(file.getAbsolutePath()));
     }
 
     private void fileMenuEvent() {
@@ -153,9 +156,7 @@ public class Gui {
         });
 
         // 为"Exit"设置事件监听
-        exitItem.addActionListener(e -> {
-            System.exit(0);
-        });
+        exitItem.addActionListener(e -> System.exit(0));
     }
 
     public static void main(String[] args) {

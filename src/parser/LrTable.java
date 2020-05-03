@@ -17,9 +17,8 @@ public class LrTable {
     public static final String stackBottom = "$";
     public static final String emptySymbol = "ε";
 
-    // 产生式集合
-    private final Set<Production> productionSet = new HashSet<>();
-    private final Map<String, Set<Production>> productionMap = new HashMap<>();
+    //follow集合
+    public final Map<String, Set<String>> followSet = new HashMap<>();
 
     // 终结符或非终结符集合
     private final Set<String> terminals = new HashSet<>();
@@ -34,70 +33,17 @@ public class LrTable {
 
     // LR(1)分析表
     private final Table lrTable;
-
-    //follow集合
-    public  final Map<String, Set<String> > followSet = new HashMap<>() ;
+    // 左部和对应的产生式集合
+    private final Map<String, Set<Production>> productionMap = new HashMap<>();
     private final List<Row> lines = new ArrayList<>();
-
-    //返回follow
-    public Map<String, Set<String> > getFollowSet(){
-        String filename = "src/parser/follow.txt"; //路径
-        readFile(filename);
-        for (int i = 0; i<lines.size();i++){
-            Row row=lines.get(i) ;
-            String[] line = row.getLine().split(" ") ;
-            String key = line[0];
-            Set<String > set = new HashSet<>();
-            for (int j = 1;j<line.length;j++){
-                set.add(line[j]);
-            }
-            followSet.put(key,set);
-        }
-
-        return  this.followSet;
-    }
-
-
-
-
-
-
-
-    /**
-     * follow
-     *
-     * @param filename 文件地址+文件名
-     */
-    private void readFile(String filename) {
-        String str;
-        int line = 0;
-        try (FileInputStream inputStream = new FileInputStream(filename);
-             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
-            while ((str = bufferedReader.readLine()) != null) {
-                line++;
-                lines.add(new Row(line, str));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    /**
-     *
-     * @return
-     */
-    public Map<Integer, Map<String, Integer>> getGraph() {
-        return graph;
-    }
-
-
 
 
     public LrTable(String filename) {
         try (FileInputStream inputStream = new FileInputStream(filename);
              BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
             String str;
+            // 产生式集合
+            Set<Production> productionSet = new HashSet<>();
             while ((str = bufferedReader.readLine()) != null) {
                 String[] production = str.split("->");
                 String left = production[0].trim();
@@ -111,7 +57,6 @@ public class LrTable {
                 }
                 // 非终结符
                 nonTerminals.add(left);
-
             }
             for (Production production : productionSet) {
                 List<String> rightList = production.getRight();
@@ -123,14 +68,9 @@ public class LrTable {
                 }
             }
             terminals.add(stackBottom);
-
         } catch (IOException e) {
             e.printStackTrace();
         }
-//        for (Production production : productionSet) {
-//            System.out.println(production);
-//        }
-
         // 计算各个非终结符的first集
         getFirstSet();
 
@@ -145,43 +85,9 @@ public class LrTable {
         constructLrTable();
     }
 
-    public Table getLrTable() {
-        return lrTable;
-    }
-
-    
-   //返回终结符集合
-    public Set<String> getTerminals(){
-        return terminals;
-    }
-
-  //返回非终结符集合
-    public Set<String> getNonTerminals(){
-        return nonTerminals;
-    }
-    
     private void constructLrTable() {
         System.out.println("----------------------");
-        /* //此处调试bug，未解决：有311个项集，但是它们编号却是0-312，中间有两个编号没用到
-        Set<Integer> set = new HashSet<>();
-        List<Integer> list = new ArrayList<>();
-        for (ItemSet itemSet : itemSets) {
-            set.add(itemSet.getNumber());
-            list.add(itemSet.getNumber());
-        }
-        System.out.println(itemSets.size());
-        System.out.println(set.size());
-        System.out.println(set);
-        System.out.println(list.size());
-        list.sort(null);
-        System.out.println(list);
-        System.out.println("少: ");
-        for (int i = 0; i <= 312; i++) {
-            if (!set.contains(i)) {
-                System.out.println(i);
-            }
-        }
-        */
+
         for (Map.Entry<Integer, Map<String, Integer>> entry : graph.entrySet()) {
             for (Map.Entry<String, Integer> entry1 : entry.getValue().entrySet()) {
                 // 此处填写GOTO表
@@ -209,19 +115,24 @@ public class LrTable {
             }
         }
         System.out.println("LR(1) Table: ");
-        System.out.println(lrTable.toString());
+//        System.out.println(lrTable.toString());
         System.out.println("----------------------");
     }
 
-    private void getFirstSet() {
-        for (String noTerminal : nonTerminals) {
-            findFirst(noTerminal, productionMap.get(noTerminal));
-        }
-//        System.out.println("firstSet: ");
-//        for (Map.Entry<String, Set<String>> entry : firstSet.entrySet()) {
-//            System.out.println(entry.getKey() + ":" + entry.getValue() + "");
-//        }
+
+    public Table getLrTable() {
+        return lrTable;
     }
+
+    public Set<String> getNonTerminals() {
+        return nonTerminals;
+    }
+
+
+    public Map<Integer, Map<String, Integer>> getGraph() {
+        return graph;
+    }
+
     private Set<String> findFirst(String leftNode, Set<Production> rightNodes) {
         if (firstSet.containsKey(leftNode)) {
             return firstSet.get(leftNode);
@@ -253,6 +164,12 @@ public class LrTable {
         }
         firstSet.put(leftNode, first);
         return first;
+    }
+
+    private void getFirstSet() {
+        for (String noTerminal : nonTerminals) {
+            findFirst(noTerminal, productionMap.get(noTerminal));
+        }
     }
 
     private Set<String> getFirstSetFromList(List<String> nodes) {
@@ -373,14 +290,30 @@ public class LrTable {
         }
     }
 
-    public static void main(String[] args) {
-//        LrTable lrTable = new LrTable("src/parser/grammar_test.txt");
-        LrTable lrTable = new LrTable("src/parser/grammar.txt");
-//        System.out.println("ItemSets: ");
-//        for (ItemSet itemSet : lrTable.itemSets) {
-//            System.out.println(itemSet.toString());
-//        }
-//        System.out.println("size: " + lrTable.itemSets.size());
-//        System.out.println(lrTable.graph);
+    private void readFile(String filename) {
+        try (FileInputStream inputStream = new FileInputStream(filename);
+             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
+            int line = 0;
+            String str;
+            while ((str = bufferedReader.readLine()) != null) {
+                line++;
+                lines.add(new Row(line, str));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //返回follow
+    public Map<String, Set<String>> getFollowSet() {
+        String filename = "src/parser/follow.txt";
+        readFile(filename);
+        for (Row row : lines) {
+            String[] line = row.getLine().split(" ");
+            String key = line[0];
+            Set<String> set = new HashSet<>(Arrays.asList(line).subList(1, line.length));
+            followSet.put(key, set);
+        }
+        return this.followSet;
     }
 }

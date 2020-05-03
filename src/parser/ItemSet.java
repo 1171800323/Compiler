@@ -5,8 +5,8 @@ import java.util.*;
 public class ItemSet {
     private final Set<Item> itemSet = new HashSet<>();
     private final int number;
-    private final Map<String, Integer> gotoTable = new HashMap<>();
     private final Set<Item> reduceItem = new HashSet<>();
+    private final Map<String, Integer> gotoTable = new HashMap<>();
 
     public ItemSet(Set<Item> itemSet, int number) {
         this.itemSet.addAll(itemSet);

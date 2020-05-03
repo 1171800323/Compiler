@@ -1,28 +1,27 @@
 package gui;
+
+import parser.Parser;
+
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
-
 import java.awt.*;
 import java.util.Enumeration;
 
-import parser.Parser;
-
 public class DrawSyntaxTree {
 
-    public DrawSyntaxTree()
-    {
-       Parser parser = new Parser();
+    public DrawSyntaxTree(String filename) {
+        Parser parser = new Parser(filename);
         DefaultMutableTreeNode rootNode = parser.getRoot();
-       JFrame jf = new JFrame("SyntaxTree");
-       jf.setSize(400, 800);
-       jf.setLocationRelativeTo(null);
-       JPanel panel = new JPanel(new BorderLayout());
-       
-       JTree tree = new JTree(rootNode);
+        JFrame jf = new JFrame("SyntaxTree");
+        jf.setSize(400, 800);
+        jf.setLocationRelativeTo(null);
+        JPanel panel = new JPanel(new BorderLayout());
 
-       // 设置树显示根节点句柄
+        JTree tree = new JTree(rootNode);
+
+        // 设置树显示根节点句柄
        tree.setShowsRootHandles(true);
 
        // 设置树节点可编辑
