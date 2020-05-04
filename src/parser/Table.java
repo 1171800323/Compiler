@@ -23,6 +23,8 @@ public class Table {
 
     // 当前状态、输入符号以及动作
     public void setTable(int status, String symbol, Action action) {
+//        System.out.println(symbol);
+//        System.out.println(status);
         actionTable[status][tableHead.indexOf(symbol)] = action;
     }
 

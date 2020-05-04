@@ -11,7 +11,7 @@ import java.util.*;
 public class Parser {
     public static final String shiftSymbol = "shift";
     public static final String reduceSymbol = "reduce";
-    public final LrTable lrtable = new LrTable("src/parser/grammar.txt");
+    public final LrTable lrtable = new LrTable("src/parser/grammar_semantic.txt");
     private final Table table;
     private final Map<String, Set<String>> followSetMap;
     public static List<Integer> lineno = new ArrayList<>(); //保存每一个的行号
@@ -145,7 +145,7 @@ public class Parser {
     }
 
     private int parserErrorHandle(String token, int i) {
-        System.out.println(i);
+//        System.out.println(i);
         if (i == tokens.size() - 1) {
             errorMessages.add("Error at Line [" + "末尾" + "]:  '" + token + "' ");
             return i;
@@ -279,6 +279,6 @@ public class Parser {
 
 
     public static void main(String[] args) {
-        new Parser("test/ex1.txt");
+        new Parser("test/right.txt");
     }
 }

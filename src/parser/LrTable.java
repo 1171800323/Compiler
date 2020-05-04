@@ -80,7 +80,7 @@ public class LrTable {
         List<String> head = new ArrayList<>(terminals);
         head.addAll(nonTerminals);
         head.remove(startSymbol);
-        lrTable = new Table(itemSets.size() + 2, head);  // 传入表头，状态数两个参数以初始化
+        lrTable = new Table(itemSets.size() + 12, head);  // 传入表头，状态数两个参数以初始化
         constructLrTable();
     }
 
