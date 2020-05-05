@@ -1,12 +1,9 @@
-struct student{
-    int id ;
-    char name ;
-}
-
 char [2][3] string;
-
-proc int getSum(int x, int y){
-         int z;
-         z = x + y;
-         return z;
+int [2][3] m;
+int id ;
+char name;
+float f;
+struct student{
+    int stuId ;
+    char stuName ;
 }

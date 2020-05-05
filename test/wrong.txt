@@ -3,30 +3,29 @@ struct student{
     char name ;
 }
     char [2][3] string;
-    string[0][1] = 'a';
+    string[1][1] = 'a';
     string[0][2] = 'b';
     char ch;
-    ch = string[0][1];
+    ch = string[1][1];
 
     int a;
     int b;
+    int c;
+    int d;
     b = 1 + 2;
     a = b * 2;
-    float c;
     c = 1e2 + a;
-    int d;
-    d = 2;
-    float f;
-    f = 10.0;
+    d = 1;
 
-    int x;
-    int y;
-    int z;
     while (a < b)
     do if (c < d) then
-          x = a + c;
+          d = a + b;
        else
-          x = a * c;
+          d = a * b;
+
+    float f;
+    f = 10.0;
+    f = a + f;
 
     /* 声明 */
     proc int getSum(int x, int y){

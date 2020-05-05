@@ -1,7 +1,5 @@
 package parser;
 
-import lexer.Row;
-
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -16,9 +14,6 @@ public class LrTable {
     public static final String acceptSymbol = "acc";
     public static final String stackBottom = "$";
     public static final String emptySymbol = "ε";
-
-    //follow集合
-    public final Map<String, Set<String>> followSet = new HashMap<>();
 
     // 终结符或非终结符集合
     private final Set<String> terminals = new HashSet<>();
@@ -35,7 +30,6 @@ public class LrTable {
     private final Table lrTable;
     // 左部和对应的产生式集合
     private final Map<String, Set<Production>> productionMap = new HashMap<>();
-    private final List<Row> lines = new ArrayList<>();
 
     public LrTable(String filename) {
         try (FileInputStream inputStream = new FileInputStream(filename);
@@ -85,7 +79,7 @@ public class LrTable {
     }
 
     private void constructLrTable() {
-        System.out.println("----------------------");
+//        System.out.println("----------------------");
 
         for (Map.Entry<Integer, Map<String, Integer>> entry : graph.entrySet()) {
             for (Map.Entry<String, Integer> entry1 : entry.getValue().entrySet()) {
@@ -113,9 +107,9 @@ public class LrTable {
                 }
             }
         }
-        System.out.println("LR(1) Table: ");
+//        System.out.println("LR(1) Table: ");
 //        System.out.println(lrTable.toString());
-        System.out.println("----------------------");
+//        System.out.println("----------------------");
     }
 
 
@@ -123,14 +117,6 @@ public class LrTable {
         return lrTable;
     }
 
-    public Set<String> getNonTerminals() {
-        return nonTerminals;
-    }
-
-
-    public Map<Integer, Map<String, Integer>> getGraph() {
-        return graph;
-    }
 
     private Set<String> findFirst(String leftNode, Set<Production> rightNodes) {
         if (firstSet.containsKey(leftNode)) {
@@ -287,32 +273,5 @@ public class LrTable {
                 break;
             }
         }
-    }
-
-    private void readFile(String filename) {
-        try (FileInputStream inputStream = new FileInputStream(filename);
-             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
-            int line = 0;
-            String str;
-            while ((str = bufferedReader.readLine()) != null) {
-                line++;
-                lines.add(new Row(line, str));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    //返回follow
-    public Map<String, Set<String>> getFollowSet() {
-        String filename = "src/parser/follow.txt";
-        readFile(filename);
-        for (Row row : lines) {
-            String[] line = row.getLine().split(" ");
-            String key = line[0];
-            Set<String> set = new HashSet<>(Arrays.asList(line).subList(1, line.length));
-            followSet.put(key, set);
-        }
-        return this.followSet;
     }
 }

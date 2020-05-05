@@ -17,7 +17,7 @@ public class Lexer {
 
     private final List<Row> lines = new ArrayList<>();
     private final List<Token> tokens = new ArrayList<>();
-    private final Graph graph = new Graph("src/dfa.txt");
+    private final Graph graph = new Graph("src/lexer/dfa.txt");
     private final List<LexerException> errors = new ArrayList<>();
 
     public Lexer(String filename) {
@@ -69,7 +69,7 @@ public class Lexer {
                         if (e.getSource() == olds && e.getTarget() == s && e.getWeight().contains("other")) {
                             // 输出的时候把刚刚读进来的other字符去掉。
                             String symbol = temp.substring(0, temp.length() - 1);
-                            System.out.println(symbol);
+//                            System.out.println(symbol);
                             addToken(symbol, s, row.getNum());
                             temp = new StringBuilder();
                             otherflag = 1;
@@ -80,7 +80,7 @@ public class Lexer {
                     }
                     if (otherflag == 0) {
                         String symbol = temp.toString();
-                        System.out.println(symbol);
+//                        System.out.println(symbol);
                         addToken(symbol, s, row.getNum());
                         s = 1;           // 状态归一
                         temp = new StringBuilder();
