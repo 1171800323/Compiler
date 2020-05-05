@@ -279,6 +279,6 @@ public class Parser {
 
 
     public static void main(String[] args) {
-        new Parser("test/ex1.txt");
+        new Parser("test/right.txt");
     }
 }
