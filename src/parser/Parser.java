@@ -1,6 +1,7 @@
 package parser;
 
 import lexer.Lexer;
+import lexer.Num;
 import lexer.Tag;
 import lexer.Token;
 
@@ -21,14 +22,14 @@ public class Parser {
 
     // 状态栈和符号栈
     private final Stack<Integer> statusStack = new Stack<>();
-    private final Stack<String> symbolStack = new Stack<>();
+    private final Stack<Symbol> symbolStack = new Stack<>();
 
-    private final List<String> tokens;
+    private final List<Token> tokens;
 
     public Parser(String filename) {
         // 初始化栈
         statusStack.push(0);
-        symbolStack.push(LrTable.stackBottom);
+        symbolStack.push(new Symbol(LrTable.stackBottom));
 
         // 词法分析
         Lexer lexer = new Lexer(filename);
@@ -46,10 +47,10 @@ public class Parser {
         }
     }
 
-    private void handle(List<String> tokens) {
+    private void handle(List<Token> tokens) {
         // 一遍扫描
         for (int i = 0; i < tokens.size(); i++) {
-            String token = tokens.get(i);
+            String token = tokens.get(i).getTag().getValue();
             if (statusStack.empty()) {
                 return;
             }
@@ -57,13 +58,13 @@ public class Parser {
             Action action = table.getAction(statusStack.peek(), token);
             if (statusStack.size() != symbolStack.size()) {
                 // 当状态栈和符号栈数目不同，需要查GOTO表
-                action = table.getAction(statusStack.peek(), symbolStack.peek());
+                action = table.getAction(statusStack.peek(), symbolStack.peek().getName());
             }
             if (action != null) {
                 // 移入动作，同时将token值和状态号进栈
                 if (shiftSymbol.equals(action.getAction())) {
                     statusStack.push(action.getStatus());
-                    symbolStack.push(token);
+                    symbolStack.push(new Symbol(token));
                     TreeList.add(new DefaultMutableTreeNode(token));
                     System.out.println(action);
                 } else if (reduceSymbol.equals(action.getAction())) {
@@ -82,7 +83,7 @@ public class Parser {
                         statusStack.pop();
                         symbolStack.pop();
                     }
-                    symbolStack.push(production.getLeft());
+                    symbolStack.push(new Symbol(production.getLeft()));
                     // 指针不移动
                     i--;
                     System.out.println(action);
@@ -98,7 +99,7 @@ public class Parser {
                 }
             } else {
                 //错误处理
-                i = parserErrorHandle(token, i);
+//                i = parserErrorHandle(token, i);
             }
         }
     }
@@ -106,17 +107,21 @@ public class Parser {
     /**
      * 将词法分析获得的token，变成语法分析需要的形式token
      */
-    public List<String> tokenChange(List<Token> tokens) {
-        List<String> stringTokens = new ArrayList<>();
+    public List<Token> tokenChange(List<Token> tokens) {
+        List<Token> list = new ArrayList<>();
         for (Token token : tokens) {
-            if (token.tag == Tag.OCT || token.tag == Tag.HEX) {
-                stringTokens.add("num");
-            } else if (token.tag != Tag.NOTE) {
-                stringTokens.add(token.tag.getValue());
+            if (token.getTag() == Tag.OCT) {
+                Num num = (Num) token;
+                list.add(new Num(num.getValue(), Tag.NUM, num.getLine()));
+            } else if (token.getTag() == Tag.HEX) {
+                Num num = (Num) token;
+                list.add(new Num(num.getValue(), Tag.NUM, num.getLine()));
+            } else if (token.getTag() != Tag.NOTE) {
+                list.add(token);
             }
         }
-        stringTokens.add("$");
-        return stringTokens;
+        list.add(new Token(Tag.STACK_BOTTOM, -1));
+        return list;
     }
 
     private void paintTree(Production production) {
@@ -143,7 +148,7 @@ public class Parser {
     public DefaultMutableTreeNode getRoot() {
         return this.TreeList.get(0);
     }
-
+/*
     private int parserErrorHandle(String token, int i) {
 //        System.out.println(i);
         if (i == tokens.size() - 1) {
@@ -160,29 +165,29 @@ public class Parser {
         }
 
         // 赋值语句缺少分号
-        if (symbolStack.get(symbolStack.size() - 2).equals("=") && (symbolStack.peek().equals("id") || symbolStack.peek().equals("real") ||
-                symbolStack.peek().equals("num") || symbolStack.peek().equals("character")) && line2 > line1) {
+        if (symbolStack.get(symbolStack.size() - 2).getName().equals("=") && (symbolStack.peek().getName().equals("id") || symbolStack.peek().getName().equals("real") ||
+                symbolStack.peek().getName().equals("num") || symbolStack.peek().getName().equals("character")) && line2 > line1) {
             tokens.add(i, ";");
             lineno.add(i, line1);
             i = i - 1;
             return i;
         }
         // 重复
-        else if (symbolStack.peek().equals(token) && !token.equals("(") && !token.equals(")") && !token.equals("{") && !token.equals("}")) {
+        else if (symbolStack.peek().getName().equals(token) && !token.equals("(") && !token.equals(")") && !token.equals("{") && !token.equals("}")) {
             tokens.remove(i);
             lineno.remove(i);
             i = i - 1;
             return i;
         }
         // 缺少 if 后面左括号
-        else if (symbolStack.peek().equals("if") && !token.equals("(")) {
+        else if (symbolStack.peek().getName().equals("if") && !token.equals("(")) {
             tokens.add(i, "(");
             lineno.add(i, line1);
             i = i - 1;
             return i;
         }
         // 结构体缺少左大括号
-        else if (symbolStack.peek().equals("id") && !token.equals("(") && symbolStack.get(symbolStack.size() - 2).equals("struct")) {
+        else if (symbolStack.peek().getName().equals("id") && !token.equals("(") && symbolStack.get(symbolStack.size() - 2).getName().equals("struct")) {
             tokens.add(i, "{");
             lineno.add(i, line1);
             i = i - 1;
@@ -252,7 +257,7 @@ public class Parser {
 
             while (j < i + 3) {
                 statusStack.push(nextState);
-                symbolStack.push(A);
+                symbolStack.push(new Symbol(A));
                 if (j >= tokens.size()) {
                     return i;
                 }
@@ -276,8 +281,7 @@ public class Parser {
         }
         return i;
     }
-
-
+*/
     public static void main(String[] args) {
         new Parser("test/right.txt");
     }

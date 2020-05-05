@@ -108,7 +108,7 @@ public class Lexer {
                         if (e.getSource() == olds && e.getTarget() == s && e.getWeight().contains("other")) {
                             // 输出的时候把刚刚读进来的other字符去掉。
                             String symbol = temp.substring(0, temp.length() - 1);
-                            System.out.println(symbol);
+//                            System.out.println(symbol);
                             addToken(symbol, s, endline);
                             temp = new StringBuilder();
                             otherflag = 1;
@@ -119,7 +119,7 @@ public class Lexer {
                     }
                     if (otherflag == 0) {
                         String symbol = temp.toString();
-                        System.out.println(symbol);
+//                        System.out.println(symbol);
                         addToken(symbol, s, endline);
                         s = 1;           // 状态归一
                         temp = new StringBuilder();
@@ -137,29 +137,28 @@ public class Lexer {
      * @param state  接收状态
      */
     private void addToken(String symbol, int state, int line) {
-
         lineno.add(line);
         Tag tag = graph.getEndStates().get(state);
         switch (tag) {
             case ID:
                 if (graph.isKeyWord(symbol)) {
-                    tokens.add(new Token(Tag.fromString(symbol)));
+                    tokens.add(new Token(Tag.fromString(symbol), line));
                     return;
                 }
             case NOTE:
             case CHARACTER:
-                tokens.add(new Word(symbol, tag));
+                tokens.add(new Word(symbol, tag, line));
                 break;
             case NUM:
             case OCT:
             case HEX:
-                tokens.add(new Num(parseToNum(symbol), tag));
+                tokens.add(new Num(parseToNum(symbol), tag, line));
                 break;
             case REAL:
-                tokens.add(new Real(parseToReal(symbol)));
+                tokens.add(new Real(parseToReal(symbol), line));
                 break;
             default:
-                tokens.add(new Token(tag));
+                tokens.add(new Token(tag, line));
                 break;
         }
     }

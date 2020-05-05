@@ -5,14 +5,24 @@ package lexer;
  */
 public class Token {
     // 种别码
-    public final Tag tag;
+    private final Tag tag;
+    private final int line;
 
-    public Token(Tag tag) {
+    public Token(Tag tag, int line) {
         this.tag = tag;
+        this.line = line;
+    }
+
+    public int getLine() {
+        return line;
+    }
+
+    public Tag getTag() {
+        return tag;
     }
 
     @Override
     public String toString() {
-        return "<"+tag+", _>";
+        return "<" + tag + ", _>";
     }
 }
