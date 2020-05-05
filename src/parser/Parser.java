@@ -74,6 +74,7 @@ public class Parser {
                 } else if (reduceSymbol.equals(action.getAction())) {
                     // 规约动作，同时弹出两个栈中内容，最后需要将产生式左部进栈
                     Production production = action.getProduction();
+                    //执行动作
 
                     // 语法树
                     paintTree(production);
@@ -102,7 +103,7 @@ public class Parser {
                     i--;
                 }
             } else {
-                //错误处理
+                //语法分析错误处理
                 i = parserErrorHandle(token, i);
             }
         }
@@ -149,6 +150,9 @@ public class Parser {
         return this.TreeList.get(0);
     }
 
+    /**
+     *     语法分析阶段的错误处理
+      */
     private int parserErrorHandle(String token, int i) {
         System.out.println(i);
         if (i == tokens.size() - 1) {

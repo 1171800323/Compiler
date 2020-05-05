@@ -1,8 +1,11 @@
-/*  zhushi */
+
 struct student
     int id ;
     char[10] name ;
 }
+
+    char cc = '  ;
+
     int int  a = 10 ;
     a = x + y;
     float f = 1e2;
