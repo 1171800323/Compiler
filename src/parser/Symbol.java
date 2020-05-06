@@ -7,6 +7,7 @@ public class Symbol {
     private final String name;
     private final Map<String, String> attributes = new HashMap<>();
 
+
     public Symbol(String name) {
         this.name = name;
     }

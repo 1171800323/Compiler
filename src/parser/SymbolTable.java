@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 public class SymbolTable {
+
     private final Map<String, SymbolItem> symbolItemMap = new HashMap<>();
     private final List<String> idList = new ArrayList<>();
 
@@ -20,6 +21,9 @@ public class SymbolTable {
         symbolItemMap.put(id, symbolItem);
         idList.add(id);
     }
+    public String getType(String id){
+        return symbolItemMap.get(id).getType();
+    }
 
     @Override
     public String toString() {
@@ -28,6 +32,6 @@ public class SymbolTable {
         for (String id : idList) {
             stringBuilder.append(symbolItemMap.get(id).toString() + "\n");
         }
-        return stringBuilder.toString();
+        return stringBuilder.toString().trim();
     }
 }
