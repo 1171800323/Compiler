@@ -22,7 +22,7 @@ public class Parser {
     private final List<Token> tokens;
 
     // 符号表
-    private final Map<String, SymbolItem> symbolTable = new HashMap<>();
+    private final SymbolTable symbolTable = new SymbolTable();
     private int offset = 0;
 
     // 中间代码
@@ -55,7 +55,7 @@ public class Parser {
         handle();
 
         // 打印符号表
-        printSymbolTable();
+        System.out.println(symbolTable.toString());
     }
 
 
@@ -132,101 +132,145 @@ public class Parser {
     // 规约时语法、语义动作
     private void reduce(Production production) {
         popStatusStack(production);
-        if (production.toString().equals("D -> T id ;")) {
-            symbolStack.pop();
-            Symbol id = symbolStack.pop();
-            Symbol T = symbolStack.pop();
-            String idLexeme = id.getAttribute("lexeme");
-            int idLineNum = getIntFromString(id.getAttribute("lineNum"));
-            String tType = T.getAttribute("type");
-            int tWidth = getIntFromString(T.getAttribute("width"));
-            if (symbolTable.containsKey(idLexeme)) {
-                semanticErrorMessage.add("Error at line[" + idLineNum + "]: " + "重复声明的变量名 " + idLexeme);
-            } else {
-                symbolTable.put(idLexeme, new SymbolItem(idLexeme, tType, offset, idLineNum));
-                offset += tWidth;
+        switch (production.toString()) {
+            case "D -> T id ;": {
+                symbolStack.pop();
+                Symbol id = symbolStack.pop();
+                Symbol T = symbolStack.pop();
+                String idLexeme = id.getAttribute("lexeme");
+                int idLineNum = getIntFromString(id.getAttribute("lineNum"));
+                String tType = T.getAttribute("type");
+                int tWidth = getIntFromString(T.getAttribute("width"));
+                if (symbolTable.isIdExisted(idLexeme)) {
+                    semanticErrorMessage.add("Error at line[" + idLineNum + "]: " + "重复声明的变量名 " + idLexeme);
+                } else {
+                    symbolTable.put(idLexeme, new SymbolItem(idLexeme, tType, offset, idLineNum));
+                    offset += tWidth;
+                }
+                symbolStack.push(new Symbol(production.getLeft()));
+                break;
             }
-            symbolStack.push(new Symbol(production.getLeft()));
-        } else if (production.toString().equals("T -> X TM C")) {
-            Symbol C = symbolStack.pop();
-            symbolStack.pop();
-            symbolStack.pop();
-            Symbol T = new Symbol(production.getLeft());
-            T.putAttribute("type", C.getAttribute("type"));
-            T.putAttribute("width", C.getAttribute("width"));
-            symbolStack.push(T);
-        } else if (production.toString().equals("TM -> " + LrTable.emptySymbol)) {
-            Symbol X = symbolStack.peek();
-            tBridging = X.getAttribute("type");
-            wBridging = X.getAttribute("width");
-            symbolStack.push(new Symbol(production.getLeft()));
-        } else if (production.toString().equals("X -> int")) {
-            symbolStack.pop();
-            Symbol X = new Symbol(production.getLeft());
-            X.putAttribute("type", "int");
-            X.putAttribute("width", "4");
-            symbolStack.push(X);
-        } else if (production.toString().equals("X -> float")) {
-            symbolStack.pop();
-            Symbol X = new Symbol(production.getLeft());
-            X.putAttribute("type", "float");
-            X.putAttribute("width", "8");
-            symbolStack.push(X);
-        } else if (production.toString().equals("X -> char")) {
-            symbolStack.pop();
-            Symbol X = new Symbol(production.getLeft());
-            X.putAttribute("type", "char");
-            X.putAttribute("width", "1");
-            symbolStack.push(X);
-        } else if (production.toString().equals("C -> [ num ] C")) {
-            Symbol C1 = symbolStack.pop();
-            symbolStack.pop();
-            Symbol num = symbolStack.pop();
-            symbolStack.pop();
-            String numVal = num.getAttribute("value");
-            String c1Type = C1.getAttribute("type");
-            String c1Width = C1.getAttribute("width");
-            Symbol C = new Symbol(production.getLeft());
-            int cWidth = getIntFromString(numVal) * getIntFromString(c1Width);
-            C.putAttribute("type", "array(" + numVal + ", " + c1Type + ")");
-            C.putAttribute("width", String.valueOf(cWidth));
-            symbolStack.push(C);
-        } else if (production.toString().equals("C -> " + LrTable.emptySymbol)) {
-            Symbol C = new Symbol(production.getLeft());
-            C.putAttribute("type", tBridging);
-            C.putAttribute("width", wBridging);
-            symbolStack.push(C);
-        } else if (production.toString().equals("D -> struct id DM1 { P }")
-                || production.toString().equals("D -> proc X id DM2 ( M ) { P }")) {
-            popSymbolStack(production);
-            symbolStack.push(new Symbol(production.getLeft()));
-        } else if (production.toString().equals("DM1 -> " + LrTable.emptySymbol)) {
-            Symbol DM1 = new Symbol(production.getLeft());
-            Symbol id = symbolStack.peek();
-            String idLexeme = id.getAttribute("lexeme");
-            String type = "record";
-            int lineNum = getIntFromString(id.getAttribute("lineNum"));
-            if (symbolTable.containsKey(idLexeme)) {
-                semanticErrorMessage.add("Error at line [" + lineNum + "]: " + "重复的记录声明 " + idLexeme);
-            } else {
-                symbolTable.put(idLexeme, new SymbolItem(idLexeme, type, offset, lineNum));
+            case "T -> X TM C": {
+                Symbol C = symbolStack.pop();
+                symbolStack.pop();
+                symbolStack.pop();
+                Symbol T = new Symbol(production.getLeft());
+                T.putAttribute("type", C.getAttribute("type"));
+                T.putAttribute("width", C.getAttribute("width"));
+                symbolStack.push(T);
+                break;
             }
-            symbolStack.push(DM1);
-        } else if (production.toString().equals("DM2 -> " + LrTable.emptySymbol)) {
-            Symbol DM2 = new Symbol(production.getLeft());
-            Symbol id = symbolStack.peek();
-            String idLexeme = id.getAttribute("lexeme");
-            String type = "proc";
-            int lineNum = getIntFromString(id.getAttribute("lineNum"));
-            if (symbolTable.containsKey(idLexeme)) {
-                semanticErrorMessage.add("Error at line [" + lineNum + "]: " + "重复的过程声明 " + idLexeme);
-            } else {
-                symbolTable.put(idLexeme, new SymbolItem(idLexeme, type, offset, lineNum));
+            case "TM -> " + LrTable.emptySymbol: {
+                Symbol X = symbolStack.peek();
+                tBridging = X.getAttribute("type");
+                wBridging = X.getAttribute("width");
+                symbolStack.push(new Symbol(production.getLeft()));
+                break;
             }
-            symbolStack.push(DM2);
-        } else {
-            popSymbolStack(production);
-            symbolStack.push(new Symbol(production.getLeft()));
+            case "X -> int":
+            case "X -> float":
+            case "X -> char": {
+                symbolStack.pop();
+                Symbol X = new Symbol(production.getLeft());
+                String right = production.getRight().get(0);
+                String width = "4";
+                if (right.equals("float")) {
+                    width = "8";
+                } else if (right.equals("char")) {
+                    width = "1";
+                }
+                X.putAttribute("type", right);
+                X.putAttribute("width", width);
+                symbolStack.push(X);
+                break;
+            }
+            case "C -> [ num ] C": {
+                Symbol C1 = symbolStack.pop();
+                symbolStack.pop();
+                Symbol num = symbolStack.pop();
+                symbolStack.pop();
+                String numVal = num.getAttribute("value");
+                String c1Type = C1.getAttribute("type");
+                String c1Width = C1.getAttribute("width");
+                Symbol C = new Symbol(production.getLeft());
+                int cWidth = getIntFromString(numVal) * getIntFromString(c1Width);
+                C.putAttribute("type", "array(" + numVal + ", " + c1Type + ")");
+                C.putAttribute("width", String.valueOf(cWidth));
+                symbolStack.push(C);
+                break;
+            }
+            case "C -> " + LrTable.emptySymbol: {
+                Symbol C = new Symbol(production.getLeft());
+                C.putAttribute("type", tBridging);
+                C.putAttribute("width", wBridging);
+                symbolStack.push(C);
+                break;
+            }
+            case "DM1 -> " + LrTable.emptySymbol:
+            case "DM2 -> " + LrTable.emptySymbol: {
+                Symbol DM = new Symbol(production.getLeft());
+                Symbol id = symbolStack.peek();
+                String idLexeme = id.getAttribute("lexeme");
+                String type, errorReason;
+                if (production.getLeft().equals("DM1")) {
+                    type = "record";
+                    errorReason = "重复的记录声明";
+                } else {
+                    type = "proc";
+                    errorReason = "重复的过程声明";
+                }
+                int lineNum = getIntFromString(id.getAttribute("lineNum"));
+                if (symbolTable.isIdExisted(idLexeme)) {
+                    semanticErrorMessage.add("Error at line [" + lineNum + "]: " + errorReason + idLexeme);
+                } else {
+                    symbolTable.put(idLexeme, new SymbolItem(idLexeme, type, offset, lineNum));
+                }
+                symbolStack.push(DM);
+                break;
+            }
+            case "M -> M , X id": {
+                Symbol id = symbolStack.pop();
+                Symbol X = symbolStack.pop();
+                symbolStack.pop();
+                Symbol M1 = symbolStack.pop();
+                String idLexeme = id.getAttribute("lexeme");
+                String xType = X.getAttribute("type");
+                int xWidth = getIntFromString(X.getAttribute("width"));
+                int lineNum = getIntFromString(id.getAttribute("lineNum"));
+                if (symbolTable.isIdExisted(idLexeme)) {
+                    semanticErrorMessage.add("Error at line[" + lineNum + "]: " + "重复声明的变量名 " + idLexeme);
+                } else {
+                    symbolTable.put(idLexeme, new SymbolItem(idLexeme, xType, offset, lineNum));
+                    offset += xWidth;
+                }
+                Symbol M = new Symbol(production.getLeft());
+                int mSize = getIntFromString(M1.getAttribute("size")) + 1;
+                M.putAttribute("size", String.valueOf(mSize));
+                symbolStack.push(M);
+                break;
+            }
+            case "M -> X id": {
+                Symbol id = symbolStack.pop();
+                Symbol X = symbolStack.pop();
+                String idLexeme = id.getAttribute("lexeme");
+                String xType = X.getAttribute("type");
+                int xWidth = getIntFromString(X.getAttribute("width"));
+                int lineNum = getIntFromString(id.getAttribute("lineNum"));
+                if (symbolTable.isIdExisted(idLexeme)) {
+                    semanticErrorMessage.add("Error at line[" + lineNum + "]: " + "重复声明的变量名 " + idLexeme);
+                } else {
+                    symbolTable.put(idLexeme, new SymbolItem(idLexeme, xType, offset, lineNum));
+                    offset += xWidth;
+                }
+                Symbol M = new Symbol(production.getLeft());
+                M.putAttribute("size", "1");
+                symbolStack.push(M);
+                break;
+            }
+            default:
+                popSymbolStack(production);
+                symbolStack.push(new Symbol(production.getLeft()));
+                break;
         }
     }
 
@@ -250,16 +294,6 @@ public class Parser {
         }
         for (int i = 0; i < num; i++) {
             symbolStack.pop();
-        }
-    }
-
-    private void printSymbolTable() {
-        System.out.println("Symbol Table: ");
-        List<SymbolItem> list = new ArrayList<>();
-        list.addAll(symbolTable.values());
-        list.sort(Comparator.comparingInt(SymbolItem::getLineNum));
-        for (SymbolItem symbolItem : list) {
-            System.out.println(symbolItem.toString());
         }
     }
 
