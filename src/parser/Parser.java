@@ -39,6 +39,9 @@ public class Parser {
     private String tBridging = "";
     private String wBridging = "";
 
+    // 过程调用语句参数
+    private final List<String> callParams = new ArrayList<>();
+
     // 错误信息
     private final SemanticErrorMessage semanticErrorMessage = new SemanticErrorMessage();
 
@@ -485,22 +488,87 @@ public class Parser {
                 symbolStack.push(new Symbol(production.getLeft()));
                 break;
             }
-//            case "S -> if ( B ) BM then S N else BM S": {
-//
-//                break;
-//            }
-//            case "S -> while BM ( B ) do BM S":{
-//
-//                break;
-//            }
-//            case "S -> call id ( Elist ) ;":{
-//
-//                break;
-//            }
-//            case "S -> return E ;":{
-//
-//                break;
-//            }
+            case "S -> if ( B ) BM then S N else BM S": {
+                Symbol S2 = symbolStack.pop();
+                Symbol BM2 = symbolStack.pop();
+                symbolStack.pop();
+                Symbol N = symbolStack.pop();
+                Symbol S1 = symbolStack.pop();
+                symbolStack.pop();
+                Symbol BM1 = symbolStack.pop();
+                symbolStack.pop();
+                Symbol B = symbolStack.pop();
+                symbolStack.pop();
+                symbolStack.pop();
+                Symbol S = new Symbol(production.getLeft());
+                codeList.backPatch(B.getList("true"), BM1.getAttribute("quad"));
+                codeList.backPatch(B.getList("false"), BM2.getAttribute("quad"));
+                List<Integer> temp = S.mergeList("next", S1.getList("next")
+                        , N.getList("next"));
+                S.mergeList("next", temp, S2.getList("next"));
+                symbolStack.push(S);
+                break;
+            }
+            case "S -> while BM ( B ) do BM S": {
+                Symbol S1 = symbolStack.pop();
+                Symbol BM2 = symbolStack.pop();
+                symbolStack.pop();
+                symbolStack.pop();
+                Symbol B = symbolStack.pop();
+                symbolStack.pop();
+                Symbol BM1 = symbolStack.pop();
+                symbolStack.pop();
+                Symbol S = new Symbol(production.getLeft());
+                codeList.backPatch(S1.getList("next"), BM1.getAttribute("quad"));
+                codeList.backPatch(B.getList("true"), BM2.getAttribute("quad"));
+                S.addList("next", B.getList("false"));
+                codeList.addCode(new String[]{"goto", BM1.getAttribute("quad")});
+                symbolStack.push(S);
+                break;
+            }
+            case "Elist -> Elist , E": {
+                Symbol E = symbolStack.pop();
+                symbolStack.pop();
+                symbolStack.pop();
+                Symbol eList = new Symbol(production.getLeft());
+                callParams.add(E.getAttribute("addr"));
+                symbolStack.push(eList);
+                break;
+            }
+            case "Elist -> E": {
+                Symbol E = symbolStack.pop();
+                callParams.clear();
+                callParams.add(E.getAttribute("addr"));
+                Symbol eList = new Symbol(production.getLeft());
+                symbolStack.push(eList);
+                break;
+            }
+            case "S -> call id ( Elist ) ;": {
+                symbolStack.pop();
+                symbolStack.pop();
+                symbolStack.pop();
+                symbolStack.pop();
+                Symbol id = symbolStack.pop();
+                symbolStack.pop();
+                Symbol S = new Symbol(production.getLeft());
+                symbolStack.push(S);
+                int n = 0;
+                for (String t : callParams) {
+                    codeList.addCode(new String[]{"param", t});
+                    n = n + 1;
+                }
+                codeList.addCode(new String[]{"call", id.getAttribute("lexeme"), ",", String.valueOf(n)});
+                break;
+            }
+            case "S -> return E ;": {
+                symbolStack.pop();
+                Symbol E = symbolStack.pop();
+                symbolStack.pop();
+                Symbol S = new Symbol(production.getLeft());
+                codeList.addCode(new String[]{"return", E.getAttribute("addr")});
+                symbolStack.push(S);
+                break;
+            }
             case "BM -> " + LrTable.emptySymbol: {
                 Symbol BM = new Symbol(production.getLeft());
                 BM.putAttribute("quad", String.valueOf(codeList.getQuad()));
@@ -521,10 +589,10 @@ public class Parser {
                 Symbol B1 = symbolStack.pop();
                 Symbol B = new Symbol(production.getLeft());
 
-                codeList.backPatch(B1.getList("false"), BM.getAttribute("quad"));
                 B.mergeList("true", B1.getList("true"), H.getList("true"));
                 B.addList("false", H.getList("false"));
 
+                codeList.backPatch(B1.getList("false"), BM.getAttribute("quad"));
                 symbolStack.push(B);
                 break;
             }
@@ -543,9 +611,9 @@ public class Parser {
                 symbolStack.pop();
                 Symbol H1 = symbolStack.pop();
                 Symbol H = new Symbol(production.getLeft());
-                codeList.backPatch(H1.getList("true"), BM.getAttribute("quad"));
                 H.addList("true", I.getList("true"));
                 H.mergeList("false", H1.getList("false"), I.getList("false"));
+                codeList.backPatch(H1.getList("true"), BM.getAttribute("quad"));
                 symbolStack.push(H);
                 break;
             }
@@ -581,14 +649,15 @@ public class Parser {
                 break;
             }
             case "I -> E relop E": {
-                Symbol E1 = symbolStack.pop();
-                Symbol reLop = symbolStack.pop();
                 Symbol E2 = symbolStack.pop();
+                Symbol reLop = symbolStack.pop();
+                Symbol E1 = symbolStack.pop();
                 Symbol I = new Symbol(production.getLeft());
                 I.addList("true", makeList(codeList.getQuad()));
                 I.addList("false", makeList(codeList.getQuad() + 1));
                 codeList.addCode(new String[]{"if", E1.getAttribute("addr"), reLop.getAttribute("op")
                         , E2.getAttribute("addr"), "goto"});
+                codeList.addCode(new String[]{"goto"});
                 symbolStack.push(I);
                 break;
             }
@@ -599,23 +668,6 @@ public class Parser {
                 I.addList(production.getRight().get(0), makeList(codeList.getQuad()));
                 codeList.addCode(new String[]{"goto"});
                 symbolStack.push(I);
-                break;
-            }
-            case "Elist -> Elist , E": {
-                symbolStack.pop();
-                symbolStack.pop();
-                Symbol eList1 = symbolStack.pop();
-                Symbol eList = new Symbol(production.getLeft());
-                int size = getIntFromString(eList1.getAttribute("size")) + 1;
-                eList.putAttribute("size", String.valueOf(size));
-                symbolStack.push(eList);
-                break;
-            }
-            case "Elist -> E": {
-                symbolStack.pop();
-                Symbol eList = new Symbol(production.getLeft());
-                eList.putAttribute("size", "1");
-                symbolStack.push(eList);
                 break;
             }
             default:
