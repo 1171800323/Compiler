@@ -3,6 +3,7 @@ package parser;
 
 import lexer.*;
 
+import javax.swing.plaf.synth.SynthOptionPaneUI;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,6 +32,7 @@ public class Parser {
 
     // 中间代码
     private final CodeList codeList = new CodeList();
+
 
     // 记录临时变量t使用的数目
     private int tempCount = 1;
@@ -66,9 +68,14 @@ public class Parser {
         System.out.println("中间代码: ");
         System.out.println(codeList.toString());
 
+        // 打印四元式序列
+        System.out.println("\n四元式序列: ");
+        System.out.println(codeList.getQuaternions());
+
+
         // 打印语义分析错误信息
-        System.out.println("语义分析错误信息: ");
-        System.out.println(semanticErrorMessage.toString());
+        System.err.println("\t语义分析错误信息: ");
+        System.err.println(semanticErrorMessage.toString());
     }
 
 
@@ -355,12 +362,22 @@ public class Parser {
                 L.putAttribute("array", l1Array);
                 L.putAttribute("type", lType);
                 String t = newTemp();
+
+                if(eAddr.contains(".") ){
+                    semanticErrorMessage.add(getIntFromString(L1.getAttribute("lineNum")), "数组下标不是整数: "+eAddr);
+                }
+
+
+
                 codeList.addCode(new String[]{t, "=", eAddr, "*", String.valueOf(lTypeWidth)});
                 String lOffset = newTemp();
                 L.putAttribute("offset", lOffset);
                 codeList.addCode(new String[]{lOffset, "=", l1Offset, "+", t});
                 symbolStack.push(L);
                 break;
+
+
+
             }
             case "L -> id [ E ]": {
                 symbolStack.pop();
@@ -380,13 +397,19 @@ public class Parser {
                         L.putAttribute("type", lType);
                         String t = newTemp();
                         L.putAttribute("offset", t);
+                        L.putAttribute("lineNum", String.valueOf(idLineNum));
                         String eAddr = E.getAttribute("addr");
+
+                        if(E.getAttribute("addr").contains(".") ){
+                            semanticErrorMessage.add(idLineNum, "数组下标不是整数: "+eAddr);
+                        }
+
                         codeList.addCode(new String[]{t, "=", eAddr, "*", String.valueOf(getLTypeWidth(lType))});
                     } else {
                         semanticErrorMessage.add(idLineNum, "非数组类型变量使用了数组 " + idLexeme);
                     }
                 } else {
-                    semanticErrorMessage.add(idLineNum, "没有声明的变量 " + idLexeme);
+                    semanticErrorMessage.add(idLineNum, "未经声明就使用的变量 " + idLexeme);
                 }
                 symbolStack.push(L);
                 break;
@@ -419,6 +442,10 @@ public class Parser {
                 String t = newTemp();
                 Symbol G = new Symbol(production.getLeft());
                 G.putAttribute("addr", t);
+
+//                System.err.println(F.getAttribute("type" ));
+//                System.err.println(G1.getAttribute("type" ));
+
                 codeList.addCode(new String[]{t, "=", G1.getAttribute("addr"), "*", F.getAttribute("addr")});
                 symbolStack.push(G);
                 break;
@@ -448,7 +475,7 @@ public class Parser {
                 int idLineNum = getIntFromString(id.getAttribute("lineNum"));
                 Symbol F = new Symbol(production.getLeft());
                 if (!symbolTable.isIdExisted(idLexeme)) {
-                    semanticErrorMessage.add(idLineNum, "没有声明的变量 " + idLexeme);
+                    semanticErrorMessage.add(idLineNum, "未经声明就使用的变量 " + idLexeme);
                 }
                 F.putAttribute("addr", idLexeme);
                 symbolStack.push(F);
@@ -483,7 +510,7 @@ public class Parser {
                 if (symbolTable.isIdExisted(idLexeme)) {
                     codeList.addCode(new String[]{idLexeme, "=", E.getAttribute("addr")});
                 } else {
-                    semanticErrorMessage.add(idLineNum, "没有声明的变量 " + idLexeme);
+                    semanticErrorMessage.add(idLineNum, "未经声明就使用的变量 " + idLexeme);
                 }
                 symbolStack.push(new Symbol(production.getLeft()));
                 break;
@@ -529,8 +556,10 @@ public class Parser {
             case "Elist -> Elist , E": {
                 Symbol E = symbolStack.pop();
                 symbolStack.pop();
-                symbolStack.pop();
+                Symbol eList1 = symbolStack.pop();
                 Symbol eList = new Symbol(production.getLeft());
+                int size = getIntFromString(eList1.getAttribute("size")) +1;
+                eList.putAttribute("size", String.valueOf(size));
                 callParams.add(E.getAttribute("addr"));
                 symbolStack.push(eList);
                 break;
@@ -540,6 +569,7 @@ public class Parser {
                 callParams.clear();
                 callParams.add(E.getAttribute("addr"));
                 Symbol eList = new Symbol(production.getLeft());
+                eList.putAttribute("size" ,"1" );
                 symbolStack.push(eList);
                 break;
             }
@@ -557,7 +587,13 @@ public class Parser {
                     codeList.addCode(new String[]{"param", t});
                     n = n + 1;
                 }
-                codeList.addCode(new String[]{"call", id.getAttribute("lexeme"), ",", String.valueOf(n)});
+                if( symbolTable.isIdExisted(id.getAttribute("lexeme")) ){
+                    codeList.addCode(new String[]{"call", id.getAttribute("lexeme"), ",", String.valueOf(n)});
+                }
+                else {
+                    int idLineNum = getIntFromString(id.getAttribute("lineNum"));
+                    semanticErrorMessage.add(  idLineNum ,"对普通变量使用了过程调用操作符");
+                }
                 break;
             }
             case "S -> return E ;": {
@@ -670,6 +706,25 @@ public class Parser {
                 symbolStack.push(I);
                 break;
             }
+            case "D -> proc X id DM2 ( M ) { P }":{
+                symbolStack.pop() ;
+                symbolStack.pop() ;
+                symbolStack.pop() ;
+                symbolStack.pop() ;
+                Symbol M = symbolStack.pop() ;
+                symbolStack.pop() ;
+                symbolStack.pop() ;
+                Symbol id = symbolStack.pop() ;
+                symbolStack.pop() ;
+                symbolStack.pop() ;
+                String size = (M.getAttribute("size")) ;
+                id.putAttribute("size",size);
+                Symbol D = new Symbol(production.getLeft()) ;
+                symbolStack.push(D) ;
+
+                break;
+            }
+
             default:
                 popSymbolStack(production);
                 symbolStack.push(new Symbol(production.getLeft()));

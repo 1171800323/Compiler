@@ -45,9 +45,10 @@ public class IntermediateCode {
       * @return 返回四元式序列String形式
       */
     public String getOneQuaternion() {
+
         String[] quaternion = new String[4];
         for (int i = 0; i<quaternion.length; i++){
-            quaternion[i] = "-";
+            quaternion[i] = "_";
         }
         //if a < b  goto 102
         if( code.contains("if") && code.contains("goto")){
@@ -59,18 +60,20 @@ public class IntermediateCode {
         //goto 100
         else if( !code.contains("if") && code.contains("goto") ){
             quaternion[0] = "j" ;
-            quaternion[3] = code.get(1) ;
+            if(code.size()>1){
+                quaternion[3] = code.get(1) ;
+            }
         }
         //x = y
-        else if( code.contains("=") && code.size() == 3  && ! code.contains("[")){
+        else if( code.contains("=") && code.size() == 3  && !code.get(2).contains("[") ){
             quaternion[0] = "=" ;
             quaternion[1] = code.get(2) ;
             quaternion[3] = code.get(0) ;
         }
         //x = y[i]
-        else if( code.contains("=") && code.size() == 3  &&  code.contains("[") ){
-            String y = (code.get(2).split("\\["))[0];
-            String i = ((code.get(2).split("\\["))[1].split("]"))[0];
+        else if( code.contains("=") && code.size() == 3  && code.get(2).contains("[")  ){
+            String y = (code.get(2).split("\\["))[0] ;
+            String i = (code.get(2).split("\\["))[1].split("]")[0] ;
             quaternion[0] = "=[]" ;
             quaternion[1] = y ;
             quaternion[2] = i ;
@@ -91,13 +94,23 @@ public class IntermediateCode {
             quaternion[2] = code.get(0) ;
             quaternion[3] = code.get(2) ;
         }
-        //
-//        else if( code.contains("call") ){
-//            quaternion[0] = "[]=" ;
-//            quaternion[1] = code.get(5) ;
-//            quaternion[2] = code.get(0) ;
-//            quaternion[3] = code.get(2) ;
-//        }
+        //call getSum , 2
+        else if( code.contains("call") ){
+            quaternion[0] = "call" ;
+            quaternion[1] = code.get(1) ;
+            quaternion[2] = code.get(3) ;
+        }
+        //return sum
+        else if( code.contains("return") ){
+            quaternion[0] = "return" ;
+            quaternion[1] = code.get(1) ;
+        }
+        //param a
+        else if( code.contains("param") ){
+            quaternion[0] = "param" ;
+            quaternion[1] = code.get(1) ;
+        }
+
 
 
 

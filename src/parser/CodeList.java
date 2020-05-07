@@ -5,7 +5,7 @@ import java.util.List;
 
 public class CodeList {
     private final List<IntermediateCode> codeList = new ArrayList<>();
-    private List<String> quaternions = new ArrayList<>();
+    private StringBuilder quaternions = new StringBuilder() ;
     private int quad = 0;
 
     public CodeList() {
@@ -15,9 +15,9 @@ public class CodeList {
 
 
     // 返回所有三地址指令的四元式
-    public List<String> getQuaternions(){
+    public StringBuilder getQuaternions(){
         for (int i = 0; i < codeList.size(); i++) {
-            quaternions.add(i+": "+codeList.get(i).getOneQuaternion()) ;
+            quaternions.append(i+": "+codeList.get(i).getOneQuaternion()+"\n") ;
         }
         return quaternions ;
     }
