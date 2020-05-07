@@ -100,6 +100,10 @@ public class Parser {
                         symbol.putAttribute("lexeme", ((Word) token).getLexeme());
                         symbol.putAttribute("lineNum", String.valueOf(token.getLine()));
                     }
+                    if (symbolStack.peek().getName().equals("S")){
+                        Symbol S = symbolStack.peek();
+                        codeList.backPatch(S.getList("next"), String.valueOf(codeList.getQuad()));
+                    }
                     symbolStack.push(symbol);
 
                     // 语法树
@@ -504,6 +508,7 @@ public class Parser {
                 List<Integer> temp = S.mergeList("next", S1.getList("next")
                         , N.getList("next"));
                 S.mergeList("next", temp, S2.getList("next"));
+
                 symbolStack.push(S);
                 break;
             }
@@ -746,6 +751,18 @@ public class Parser {
         Token token = tokens.get(i);
         System.out.println("Error at line: " + token.getLine() +
                 " [" + tokens.get(i).toString() + "]");
+    }
+
+    public String getCodeList() {
+        return codeList.toString();
+    }
+
+    public String getSemanticErrorMessage() {
+        return semanticErrorMessage.toString();
+    }
+
+    public String getSymbolTable() {
+        return symbolTable.toString();
     }
 
     public static void main(String[] args) {
