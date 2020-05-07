@@ -11,9 +11,8 @@ public class CodeList {
 
     }
 
-    public void addCode(String code) {
-        String[] codeArray = code.split(" ");
-        IntermediateCode intermediateCode = new IntermediateCode(codeArray);
+    public void addCode(String[] code) {
+        IntermediateCode intermediateCode = new IntermediateCode(code);
         codeList.add(intermediateCode);
         quad += 1;
     }
@@ -22,11 +21,17 @@ public class CodeList {
         return quad;
     }
 
+    public void backPatch(List<Integer> list, String quad) {
+        for (int num : list) {
+            codeList.get(num).backPatch(quad);
+        }
+    }
+
     @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
-        for (IntermediateCode intermediateCode : codeList){
-            stringBuilder.append(intermediateCode.toString()).append("\n");
+        for (int i = 0; i < codeList.size(); i++) {
+            stringBuilder.append(i + ": ").append(codeList.get(i)).append("\n");
         }
         return stringBuilder.toString().trim();
     }

@@ -235,6 +235,12 @@ public class Parser {
         return width;
     }
 
+    private List<Integer> makeList(int quad) {
+        List<Integer> list = new ArrayList<>();
+        list.add(quad);
+        return list;
+    }
+
     // 规约时语法、语义动作
     private void reduce(Production production) {
         popStatusStack(production);
@@ -390,10 +396,10 @@ public class Parser {
                 L.putAttribute("array", l1Array);
                 L.putAttribute("type", lType);
                 String t = newTemp();
-                codeList.addCode(t + " = " + eAddr + " * " + lTypeWidth);
+                codeList.addCode(new String[]{t, "=", eAddr, "*", String.valueOf(lTypeWidth)});
                 String lOffset = newTemp();
                 L.putAttribute("offset", lOffset);
-                codeList.addCode(lOffset + " = " + l1Offset + " + " + t);
+                codeList.addCode(new String[]{lOffset, "=", l1Offset, "+", t});
                 symbolStack.push(L);
                 break;
             }
@@ -416,7 +422,7 @@ public class Parser {
                         String t = newTemp();
                         L.putAttribute("offset", t);
                         String eAddr = E.getAttribute("addr");
-                        codeList.addCode(t + " = " + eAddr + " * " + getLTypeWidth(lType));
+                        codeList.addCode(new String[]{t, "=", eAddr, "*", String.valueOf(getLTypeWidth(lType))});
                     } else {
                         semanticErrorMessage.add(idLineNum, "非数组类型变量使用了数组 " + idLexeme);
                     }
@@ -435,7 +441,7 @@ public class Parser {
                 String t = newTemp();
                 Symbol E = new Symbol(production.getLeft());
                 E.putAttribute("addr", t);
-                codeList.addCode(t + " = " + e1Addr + " + " + gAddr);
+                codeList.addCode(new String[]{t, "=", e1Addr, "+", gAddr});
                 symbolStack.push(E);
                 break;
             }
@@ -454,8 +460,7 @@ public class Parser {
                 String t = newTemp();
                 Symbol G = new Symbol(production.getLeft());
                 G.putAttribute("addr", t);
-                codeList.addCode(t + " = " + G1.getAttribute("addr") + " * "
-                        + F.getAttribute("addr"));
+                codeList.addCode(new String[]{t, "=", G1.getAttribute("addr"), "*", F.getAttribute("addr")});
                 symbolStack.push(G);
                 break;
             }
@@ -505,8 +510,8 @@ public class Parser {
                 Symbol E = symbolStack.pop();
                 symbolStack.pop();
                 Symbol L = symbolStack.pop();
-                codeList.addCode(L.getAttribute("array") + " ["
-                        + L.getAttribute("offset") + "] " + " = " + E.getAttribute("addr"));
+                codeList.addCode(new String[]{L.getAttribute("array"), "[",
+                        L.getAttribute("offset"), "]", "=", E.getAttribute("addr")});
                 symbolStack.push(new Symbol(production.getLeft()));
                 break;
             }
@@ -518,7 +523,7 @@ public class Parser {
                 String idLexeme = id.getAttribute("lexeme");
                 int idLineNum = getIntFromString(id.getAttribute("lineNum"));
                 if (symbolTable.isIdExisted(idLexeme)) {
-                    codeList.addCode(idLexeme + " = " + E.getAttribute("addr"));
+                    codeList.addCode(new String[]{idLexeme, "=", E.getAttribute("addr")});
                 } else {
                     semanticErrorMessage.add(idLineNum, "没有声明的变量 " + idLexeme);
                 }
@@ -541,58 +546,123 @@ public class Parser {
 //
 //                break;
 //            }
-//            case "BM -> " + LrTable.emptySymbol:{
-//
-//                break;
-//            }
-//            case "N -> " + LrTable.emptySymbol: {
-//
-//                break;
-//            }
-//            case "B -> B || BM H":{
-//
-//                break;
-//            }
-//            case "B -> H":{
-//
-//                break;
-//            }
-//            case "H -> H && BM I":{
-//
-//                break;
-//            }
-//            case "H -> I":{
-//
-//                break;
-//            }
-//            case "I -> ! I":{
-//
-//                break;
-//            }
-//            case "I -> ( B )":{
-//
-//                break;
-//            }
-//            case "I -> E relop E":{
-//
-//                break;
-//            }
-//            case "I -> true":{
-//
-//                break;
-//            }
-//            case "I -> false":{
-//
-//                break;
-//            }
-//            case "Elist -> Elist , E":{
-//
-//                break;
-//            }
-//            case "Elist -> E":{
-//
-//                break;
-//            }
+            case "BM -> " + LrTable.emptySymbol: {
+                Symbol BM = new Symbol(production.getLeft());
+                BM.putAttribute("quad", String.valueOf(codeList.getQuad()));
+                symbolStack.push(BM);
+                break;
+            }
+            case "N -> " + LrTable.emptySymbol: {
+                Symbol N = new Symbol(production.getLeft());
+                N.addList("next", makeList(codeList.getQuad()));
+                symbolStack.push(N);
+                codeList.addCode(new String[]{"goto"});
+                break;
+            }
+            case "B -> B || BM H": {
+                Symbol H = symbolStack.pop();
+                Symbol BM = symbolStack.pop();
+                symbolStack.pop();
+                Symbol B1 = symbolStack.pop();
+                Symbol B = new Symbol(production.getLeft());
+
+                codeList.backPatch(B1.getList("false"), BM.getAttribute("quad"));
+                B.mergeList("true", B1.getList("true"), H.getList("true"));
+                B.addList("false", H.getList("false"));
+
+                symbolStack.push(B);
+                break;
+            }
+            case "B -> H":
+            case "H -> I": {
+                Symbol right = symbolStack.pop();
+                Symbol left = new Symbol(production.getLeft());
+                left.addList("true", right.getList("true"));
+                left.addList("false", right.getList("false"));
+                symbolStack.push(left);
+                break;
+            }
+            case "H -> H && BM I": {
+                Symbol I = symbolStack.pop();
+                Symbol BM = symbolStack.pop();
+                symbolStack.pop();
+                Symbol H1 = symbolStack.pop();
+                Symbol H = new Symbol(production.getLeft());
+                codeList.backPatch(H1.getList("true"), BM.getAttribute("quad"));
+                H.addList("true", I.getList("true"));
+                H.mergeList("false", H1.getList("false"), I.getList("false"));
+                symbolStack.push(H);
+                break;
+            }
+            case "I -> ! I": {
+                Symbol I1 = symbolStack.pop();
+                symbolStack.pop();
+                Symbol I = new Symbol(production.getLeft());
+                I.addList("true", I1.getList("false"));
+                I.addList("false", I1.getList("true"));
+                symbolStack.push(I);
+                break;
+            }
+            case "I -> ( B )": {
+                symbolStack.pop();
+                Symbol B = symbolStack.pop();
+                symbolStack.pop();
+                Symbol I = new Symbol(production.getLeft());
+                I.addList("true", B.getList("true"));
+                I.addList("false", B.getList("false"));
+                symbolStack.push(I);
+                break;
+            }
+            case "relop -> <":
+            case "relop -> >":
+            case "relop -> >=":
+            case "relop -> <=":
+            case "relop -> !=":
+            case "relop -> ==": {
+                symbolStack.pop();
+                Symbol reLop = new Symbol(production.getLeft());
+                reLop.putAttribute("op", production.getRight().get(0));
+                symbolStack.push(reLop);
+                break;
+            }
+            case "I -> E relop E": {
+                Symbol E1 = symbolStack.pop();
+                Symbol reLop = symbolStack.pop();
+                Symbol E2 = symbolStack.pop();
+                Symbol I = new Symbol(production.getLeft());
+                I.addList("true", makeList(codeList.getQuad()));
+                I.addList("false", makeList(codeList.getQuad() + 1));
+                codeList.addCode(new String[]{"if", E1.getAttribute("addr"), reLop.getAttribute("op")
+                        , E2.getAttribute("addr"), "goto"});
+                symbolStack.push(I);
+                break;
+            }
+            case "I -> true":
+            case "I -> false": {
+                symbolStack.pop();
+                Symbol I = new Symbol(production.getLeft());
+                I.addList(production.getRight().get(0), makeList(codeList.getQuad()));
+                codeList.addCode(new String[]{"goto"});
+                symbolStack.push(I);
+                break;
+            }
+            case "Elist -> Elist , E": {
+                symbolStack.pop();
+                symbolStack.pop();
+                Symbol eList1 = symbolStack.pop();
+                Symbol eList = new Symbol(production.getLeft());
+                int size = getIntFromString(eList1.getAttribute("size")) + 1;
+                eList.putAttribute("size", String.valueOf(size));
+                symbolStack.push(eList);
+                break;
+            }
+            case "Elist -> E": {
+                symbolStack.pop();
+                Symbol eList = new Symbol(production.getLeft());
+                eList.putAttribute("size", "1");
+                symbolStack.push(eList);
+                break;
+            }
             default:
                 popSymbolStack(production);
                 symbolStack.push(new Symbol(production.getLeft()));
