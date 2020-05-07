@@ -1,13 +1,20 @@
 package parser;
 
+<<<<<<< HEAD
 import lexer.Lexer;
 import lexer.Num;
 import lexer.Tag;
 import lexer.Token;
 import syntax.SymbolItem;
+=======
+import lexer.*;
+>>>>>>> 77ce851f06745275aa56082d9e0840d2dd0e8614
 
 import javax.swing.tree.DefaultMutableTreeNode;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Stack;
 
 
 public class Parser {
@@ -15,9 +22,6 @@ public class Parser {
     public static final String reduceSymbol = "reduce";
     public final LrTable lrtable = new LrTable("src/parser/grammar_semantic.txt");
     private final Table table;
-    private final Map<String, Set<String>> followSetMap;
-    public static List<Integer> lineno = new ArrayList<>(); //保存每一个的行号
-    private final List<String> errorMessages = new ArrayList<>();
 
     private final ArrayList<DefaultMutableTreeNode> TreeList = new ArrayList<>();
 
@@ -25,11 +29,31 @@ public class Parser {
     private final Stack<Integer> statusStack = new Stack<>();
     private final Stack<Symbol> symbolStack = new Stack<>();
 
+    // Token序列
     private final List<Token> tokens;
 
+<<<<<<< HEAD
     //保存符号表
     private List<SymbolItem> SymbolsTable = new ArrayList<>() ;
 
+=======
+    // 符号表
+    private final SymbolTable symbolTable = new SymbolTable();
+    private int offset = 0;
+
+    // 中间代码
+    private final CodeList codeList = new CodeList();
+
+    // 记录临时变量t使用的数目
+    private int tempCount = 1;
+
+    // 中间值
+    private String tBridging = "";
+    private String wBridging = "";
+
+    // 错误信息
+    private final SemanticErrorMessage semanticErrorMessage = new SemanticErrorMessage();
+>>>>>>> 77ce851f06745275aa56082d9e0840d2dd0e8614
 
     public Parser(String filename) {
         // 初始化栈
@@ -38,18 +62,26 @@ public class Parser {
 
         // 词法分析
         Lexer lexer = new Lexer(filename);
+        tokens = tokenChange(lexer.getTokens());
+
+        // 语法分析和语义分析
         table = lrtable.getLrTable();
+<<<<<<< HEAD
         lineno = lexer.getLineno();  //这一步是获得对应的行号
         tokens = tokenChange(lexer.getTokens());  //获得解析后的tokens
         //打印一下看一看
         for(Token t : tokens){
             System.out.println(t.getTag() +" "+t.getLine());
         }
+=======
+        handle();
+>>>>>>> 77ce851f06745275aa56082d9e0840d2dd0e8614
 
-        // 语法分析
-        followSetMap = lrtable.getFollowSet();
-        handle(tokens);
+        // 打印符号表
+        System.out.println("符号表: ");
+        System.out.println(symbolTable.toString());
 
+<<<<<<< HEAD
         // 错误信息
         for (String err : errorMessages) {
             System.err.println("错误信息");
@@ -63,24 +95,52 @@ public class Parser {
      * @param tokens
      */
     private void handle(List<Token> tokens) {
+=======
+        // 打印中间代码
+        System.out.println("中间代码: ");
+        System.out.println(codeList.toString());
+
+        // 打印语义分析错误信息
+        System.out.println("语义分析错误信息: ");
+        System.out.println(semanticErrorMessage.toString());
+    }
+
+
+    private void handle() {
+>>>>>>> 77ce851f06745275aa56082d9e0840d2dd0e8614
         // 一遍扫描
         for (int i = 0; i < tokens.size(); i++) {
-            String token = tokens.get(i).getTag().getValue();
+            Token token = tokens.get(i);
+            String grammarSymbol = token.getTag().getValue();
             if (statusStack.empty()) {
                 return;
             }
-            // 查ACTION表，根据当前状态栈顶符号和token确定动作
-            Action action = table.getAction(statusStack.peek(), token);
+            // 查ACTION表，根据当前状态栈顶符号和当前文法符号确定动作
+            Action action = table.getAction(statusStack.peek(), grammarSymbol);
             if (statusStack.size() != symbolStack.size()) {
                 // 当状态栈和符号栈数目不同，需要查GOTO表
                 action = table.getAction(statusStack.peek(), symbolStack.peek().getName());
             }
             if (action != null) {
-                // 移入动作，同时将token值和状态号进栈
+                // 移入动作，将当前文法符号和状态号进栈
                 if (shiftSymbol.equals(action.getAction())) {
                     statusStack.push(action.getStatus());
-                    symbolStack.push(new Symbol(token));
-                    TreeList.add(new DefaultMutableTreeNode(token));
+                    Symbol symbol = new Symbol(grammarSymbol);
+                    if (token.getTag() == Tag.NUM) {
+                        symbol.putAttribute("value", String.valueOf(((Num) token).getValue()));
+                    } else if (token.getTag() == Tag.REAL) {
+                        symbol.putAttribute("value", String.valueOf(((Real) token).getValue()));
+                    } else if (token.getTag() == Tag.CHARACTER) {
+                        symbol.putAttribute("value", ((Word) token).getLexeme());
+                    } else if (token.getTag() == Tag.ID) {
+                        symbol.putAttribute("lexeme", ((Word) token).getLexeme());
+                        symbol.putAttribute("lineNum", String.valueOf(token.getLine()));
+                    }
+                    symbolStack.push(symbol);
+
+                    // 语法树
+                    TreeList.add(new DefaultMutableTreeNode(grammarSymbol));
+
                     System.out.println(action);
                 } else if (reduceSymbol.equals(action.getAction())) {
                     // 规约动作，同时弹出两个栈中内容，最后需要将产生式左部进栈
@@ -90,16 +150,9 @@ public class Parser {
                     // 语法树
                     paintTree(production);
 
-                    int num = production.getRight().size();
-                    // 空产生式不需弹栈
-                    if (production.isEmptyProduction()) {
-                        num = 0;
-                    }
-                    for (int j = 0; j < num; j++) {
-                        statusStack.pop();
-                        symbolStack.pop();
-                    }
-                    symbolStack.push(new Symbol(production.getLeft()));
+                    // 规约时动作
+                    reduce(production);
+
                     // 指针不移动
                     i--;
                     System.out.println(action);
@@ -114,25 +167,474 @@ public class Parser {
                     i--;
                 }
             } else {
+<<<<<<< HEAD
 
                 //语法分析错误处理
                 i = parserErrorHandle(token, i);
 
+=======
+                // 语法分析错误处理
+                // TODO 语义分析所做的一些修改使得原先错误处理代码不可用，此处遇到错误直接退出，待完善
+                parserErrorHandle(i);
+                break;
             }
         }
     }
 
 
+    private int getIntFromString(String s) {
+        return Integer.parseInt(s);
+    }
+
+    private String newTemp() {
+        String temp = "t" + tempCount;
+        tempCount += 1;
+        return temp;
+    }
+
+    private String getLTypeElem(String lType) {
+        int commaIndex = lType.indexOf(',');
+        int length = lType.length();
+        return lType.substring(commaIndex + 1, length - 1).trim();
+    }
+
+    private int getLTypeWidth(String type) {
+        int width = 1;
+        switch (type) {
+            case "int":
+                width = 4;
+                break;
+            case "float":
+                width = 8;
+                break;
+            case "char":
+                width = 1;
+                break;
+            default:
+                for (String s : type.split(",\\s*")) {
+                    int temp = s.indexOf("(");
+                    if (temp != -1) {
+                        int tempWidth = getIntFromString(s.substring(temp + 1));
+                        width *= tempWidth;
+                    } else {
+                        String elemType = s.substring(0, s.indexOf(")"));
+                        switch (elemType) {
+                            case "int":
+                                width *= 4;
+                                break;
+                            case "float":
+                                width *= 8;
+                                break;
+                            case "char":
+                                width *= 1;
+                                break;
+                        }
+                    }
+                }
+        }
+        return width;
+    }
+
+    // 规约时语法、语义动作
+    private void reduce(Production production) {
+        popStatusStack(production);
+        switch (production.toString()) {
+            case "D -> T id ;": {
+                symbolStack.pop();
+                Symbol id = symbolStack.pop();
+                Symbol T = symbolStack.pop();
+                String idLexeme = id.getAttribute("lexeme");
+                int idLineNum = getIntFromString(id.getAttribute("lineNum"));
+                String tType = T.getAttribute("type");
+                int tWidth = getIntFromString(T.getAttribute("width"));
+                if (symbolTable.isIdExisted(idLexeme)) {
+                    semanticErrorMessage.add(idLineNum, "重复声明的变量名 " + idLexeme);
+                } else {
+                    symbolTable.put(idLexeme, new SymbolItem(idLexeme, tType, offset, idLineNum));
+                    offset += tWidth;
+                }
+                symbolStack.push(new Symbol(production.getLeft()));
+                break;
+            }
+            case "T -> X TM C": {
+                Symbol C = symbolStack.pop();
+                symbolStack.pop();
+                symbolStack.pop();
+                Symbol T = new Symbol(production.getLeft());
+                T.putAttribute("type", C.getAttribute("type"));
+                T.putAttribute("width", C.getAttribute("width"));
+                symbolStack.push(T);
+                break;
+            }
+            case "TM -> " + LrTable.emptySymbol: {
+                Symbol X = symbolStack.peek();
+                tBridging = X.getAttribute("type");
+                wBridging = X.getAttribute("width");
+                symbolStack.push(new Symbol(production.getLeft()));
+                break;
+            }
+            case "X -> int":
+            case "X -> float":
+            case "X -> char": {
+                symbolStack.pop();
+                Symbol X = new Symbol(production.getLeft());
+                String right = production.getRight().get(0);
+                String width = "4";
+                if (right.equals("float")) {
+                    width = "8";
+                } else if (right.equals("char")) {
+                    width = "1";
+                }
+                X.putAttribute("type", right);
+                X.putAttribute("width", width);
+                symbolStack.push(X);
+                break;
+            }
+            case "C -> [ num ] C": {
+                Symbol C1 = symbolStack.pop();
+                symbolStack.pop();
+                Symbol num = symbolStack.pop();
+                symbolStack.pop();
+                String numVal = num.getAttribute("value");
+                String c1Type = C1.getAttribute("type");
+                String c1Width = C1.getAttribute("width");
+                Symbol C = new Symbol(production.getLeft());
+                int cWidth = getIntFromString(numVal) * getIntFromString(c1Width);
+                C.putAttribute("type", "array(" + numVal + ", " + c1Type + ")");
+                C.putAttribute("width", String.valueOf(cWidth));
+                symbolStack.push(C);
+                break;
+            }
+            case "C -> " + LrTable.emptySymbol: {
+                Symbol C = new Symbol(production.getLeft());
+                C.putAttribute("type", tBridging);
+                C.putAttribute("width", wBridging);
+                symbolStack.push(C);
+                break;
+            }
+            case "DM1 -> " + LrTable.emptySymbol:
+            case "DM2 -> " + LrTable.emptySymbol: {
+                Symbol DM = new Symbol(production.getLeft());
+                Symbol id = symbolStack.peek();
+                String idLexeme = id.getAttribute("lexeme");
+                String type, errorReason;
+                if (production.getLeft().equals("DM1")) {
+                    type = "record";
+                    errorReason = "重复的记录声明";
+                } else {
+                    type = "proc";
+                    errorReason = "重复的过程声明";
+                }
+                int lineNum = getIntFromString(id.getAttribute("lineNum"));
+                if (symbolTable.isIdExisted(idLexeme)) {
+                    semanticErrorMessage.add(lineNum, errorReason + idLexeme);
+                } else {
+                    symbolTable.put(idLexeme, new SymbolItem(idLexeme, type, offset, lineNum));
+                }
+                symbolStack.push(DM);
+                break;
+            }
+            case "M -> M , X id": {
+                Symbol id = symbolStack.pop();
+                Symbol X = symbolStack.pop();
+                symbolStack.pop();
+                Symbol M1 = symbolStack.pop();
+                String idLexeme = id.getAttribute("lexeme");
+                String xType = X.getAttribute("type");
+                int xWidth = getIntFromString(X.getAttribute("width"));
+                int lineNum = getIntFromString(id.getAttribute("lineNum"));
+                if (symbolTable.isIdExisted(idLexeme)) {
+                    semanticErrorMessage.add(lineNum, "重复声明的变量名 " + idLexeme);
+                } else {
+                    symbolTable.put(idLexeme, new SymbolItem(idLexeme, xType, offset, lineNum));
+                    offset += xWidth;
+                }
+                Symbol M = new Symbol(production.getLeft());
+                int mSize = getIntFromString(M1.getAttribute("size")) + 1;
+                M.putAttribute("size", String.valueOf(mSize));
+                symbolStack.push(M);
+                break;
+            }
+            case "M -> X id": {
+                Symbol id = symbolStack.pop();
+                Symbol X = symbolStack.pop();
+                String idLexeme = id.getAttribute("lexeme");
+                String xType = X.getAttribute("type");
+                int xWidth = getIntFromString(X.getAttribute("width"));
+                int lineNum = getIntFromString(id.getAttribute("lineNum"));
+                if (symbolTable.isIdExisted(idLexeme)) {
+                    semanticErrorMessage.add(lineNum, "重复声明的变量名 " + idLexeme);
+                } else {
+                    symbolTable.put(idLexeme, new SymbolItem(idLexeme, xType, offset, lineNum));
+                    offset += xWidth;
+                }
+                Symbol M = new Symbol(production.getLeft());
+                M.putAttribute("size", "1");
+                symbolStack.push(M);
+                break;
+            }
+            case "L -> L [ E ]": {
+                symbolStack.pop();
+                Symbol E = symbolStack.pop();
+                symbolStack.pop();
+                Symbol L1 = symbolStack.pop();
+
+                String eAddr = E.getAttribute("addr");
+                String l1Array = L1.getAttribute("array");
+                String l1Type = L1.getAttribute("type");
+                String l1Offset = L1.getAttribute("offset");
+
+                Symbol L = new Symbol(production.getLeft());
+                String lType = getLTypeElem(l1Type);
+                int lTypeWidth = getLTypeWidth(lType);
+                L.putAttribute("array", l1Array);
+                L.putAttribute("type", lType);
+                String t = newTemp();
+                codeList.addCode(t + " = " + eAddr + " * " + lTypeWidth);
+                String lOffset = newTemp();
+                L.putAttribute("offset", lOffset);
+                codeList.addCode(lOffset + " = " + l1Offset + " + " + t);
+                symbolStack.push(L);
+                break;
+            }
+            case "L -> id [ E ]": {
+                symbolStack.pop();
+                Symbol E = symbolStack.pop();
+                symbolStack.pop();
+                Symbol id = symbolStack.pop();
+                String idLexeme = id.getAttribute("lexeme");
+                int idLineNum = getIntFromString(id.getAttribute("lineNum"));
+
+                Symbol L = new Symbol(production.getLeft());
+                if (symbolTable.isIdExisted(idLexeme)) {
+                    String idType = symbolTable.getType(idLexeme);
+                    System.out.println(idType);
+                    if (idType.contains("array")) {
+                        L.putAttribute("array", idLexeme);
+                        String lType = getLTypeElem(idType);
+                        L.putAttribute("type", lType);
+                        String t = newTemp();
+                        L.putAttribute("offset", t);
+                        String eAddr = E.getAttribute("addr");
+                        codeList.addCode(t + " = " + eAddr + " * " + getLTypeWidth(lType));
+                    } else {
+                        semanticErrorMessage.add(idLineNum, "非数组类型变量使用了数组 " + idLexeme);
+                    }
+                } else {
+                    semanticErrorMessage.add(idLineNum, "没有声明的变量 " + idLexeme);
+                }
+                symbolStack.push(L);
+                break;
+            }
+            case "E -> E + G": {
+                Symbol G = symbolStack.pop();
+                symbolStack.pop();
+                Symbol E1 = symbolStack.pop();
+                String e1Addr = E1.getAttribute("addr");
+                String gAddr = G.getAttribute("addr");
+                String t = newTemp();
+                Symbol E = new Symbol(production.getLeft());
+                E.putAttribute("addr", t);
+                codeList.addCode(t + " = " + e1Addr + " + " + gAddr);
+                symbolStack.push(E);
+                break;
+            }
+            case "E -> G":
+            case "G -> F": {
+                Symbol right = symbolStack.pop();
+                Symbol left = new Symbol(production.getLeft());
+                left.putAttribute("addr", right.getAttribute("addr"));
+                symbolStack.push(left);
+                break;
+            }
+            case "G -> G * F": {
+                Symbol F = symbolStack.pop();
+                symbolStack.pop();
+                Symbol G1 = symbolStack.pop();
+                String t = newTemp();
+                Symbol G = new Symbol(production.getLeft());
+                G.putAttribute("addr", t);
+                codeList.addCode(t + " = " + G1.getAttribute("addr") + " * "
+                        + F.getAttribute("addr"));
+                symbolStack.push(G);
+                break;
+            }
+            case "F -> ( E )": {
+                symbolStack.pop();
+                Symbol E = symbolStack.pop();
+                symbolStack.pop();
+                Symbol F = new Symbol(production.getLeft());
+                F.putAttribute("addr", E.getAttribute("addr"));
+                symbolStack.push(F);
+                break;
+            }
+            case "F -> num":
+            case "F -> real":
+            case "F -> character": {
+                Symbol num = symbolStack.pop();
+                String val = num.getAttribute("value");
+                Symbol F = new Symbol(production.getLeft());
+                F.putAttribute("addr", val);
+                symbolStack.push(F);
+                break;
+            }
+            case "F -> id": {
+                Symbol id = symbolStack.pop();
+                String idLexeme = id.getAttribute("lexeme");
+                int idLineNum = getIntFromString(id.getAttribute("lineNum"));
+                Symbol F = new Symbol(production.getLeft());
+                if (!symbolTable.isIdExisted(idLexeme)) {
+                    semanticErrorMessage.add(idLineNum, "没有声明的变量 " + idLexeme);
+                }
+                F.putAttribute("addr", idLexeme);
+                symbolStack.push(F);
+                break;
+>>>>>>> 77ce851f06745275aa56082d9e0840d2dd0e8614
+            }
+            case "F -> L": {
+                Symbol L = symbolStack.pop();
+                String lArray = L.getAttribute("array");
+                String lOffset = L.getAttribute("offset");
+                Symbol F = new Symbol(production.getLeft());
+                F.putAttribute("addr", lArray + "[" + lOffset + "]");
+                symbolStack.push(F);
+                break;
+            }
+            case "S -> L = E ;": {
+                symbolStack.pop();
+                Symbol E = symbolStack.pop();
+                symbolStack.pop();
+                Symbol L = symbolStack.pop();
+                codeList.addCode(L.getAttribute("array") + " ["
+                        + L.getAttribute("offset") + "] " + " = " + E.getAttribute("addr"));
+                symbolStack.push(new Symbol(production.getLeft()));
+                break;
+            }
+            case "S -> id = E ;": {
+                symbolStack.pop();
+                Symbol E = symbolStack.pop();
+                symbolStack.pop();
+                Symbol id = symbolStack.pop();
+                String idLexeme = id.getAttribute("lexeme");
+                int idLineNum = getIntFromString(id.getAttribute("lineNum"));
+                if (symbolTable.isIdExisted(idLexeme)) {
+                    codeList.addCode(idLexeme + " = " + E.getAttribute("addr"));
+                } else {
+                    semanticErrorMessage.add(idLineNum, "没有声明的变量 " + idLexeme);
+                }
+                symbolStack.push(new Symbol(production.getLeft()));
+                break;
+            }
+//            case "S -> if ( B ) BM then S N else BM S": {
+//
+//                break;
+//            }
+//            case "S -> while BM ( B ) do BM S":{
+//
+//                break;
+//            }
+//            case "S -> call id ( Elist ) ;":{
+//
+//                break;
+//            }
+//            case "S -> return E ;":{
+//
+//                break;
+//            }
+//            case "BM -> " + LrTable.emptySymbol:{
+//
+//                break;
+//            }
+//            case "N -> " + LrTable.emptySymbol: {
+//
+//                break;
+//            }
+//            case "B -> B || BM H":{
+//
+//                break;
+//            }
+//            case "B -> H":{
+//
+//                break;
+//            }
+//            case "H -> H && BM I":{
+//
+//                break;
+//            }
+//            case "H -> I":{
+//
+//                break;
+//            }
+//            case "I -> ! I":{
+//
+//                break;
+//            }
+//            case "I -> ( B )":{
+//
+//                break;
+//            }
+//            case "I -> E relop E":{
+//
+//                break;
+//            }
+//            case "I -> true":{
+//
+//                break;
+//            }
+//            case "I -> false":{
+//
+//                break;
+//            }
+//            case "Elist -> Elist , E":{
+//
+//                break;
+//            }
+//            case "Elist -> E":{
+//
+//                break;
+//            }
+            default:
+                popSymbolStack(production);
+                symbolStack.push(new Symbol(production.getLeft()));
+                break;
+        }
+    }
+
+    // 状态栈弹栈
+    private void popStatusStack(Production production) {
+        int num = production.getRight().size();
+        // 空产生式不需弹栈
+        if (production.isEmptyProduction()) {
+            num = 0;
+        }
+        for (int i = 0; i < num; i++) {
+            statusStack.pop();
+        }
+    }
+
+    private void popSymbolStack(Production production) {
+        int num = production.getRight().size();
+        // 空产生式不需弹栈
+        if (production.isEmptyProduction()) {
+            num = 0;
+        }
+        for (int i = 0; i < num; i++) {
+            symbolStack.pop();
+        }
+    }
+
+
     /**
+<<<<<<< HEAD
      * 将词法分析获得的token，变成语法分析需要的形式token, 解析
+=======
+     * 删除注释，将OCT和HEX转化为NUM，增加栈底符号
+>>>>>>> 77ce851f06745275aa56082d9e0840d2dd0e8614
      */
     public List<Token> tokenChange(List<Token> tokens) {
         List<Token> list = new ArrayList<>();
         for (Token token : tokens) {
-            if (token.getTag() == Tag.OCT) {
-                Num num = (Num) token;
-                list.add(new Num(num.getValue(), Tag.NUM, num.getLine()));
-            } else if (token.getTag() == Tag.HEX) {
+            if (token.getTag() == Tag.OCT || token.getTag() == Tag.HEX) {
                 Num num = (Num) token;
                 list.add(new Num(num.getValue(), Tag.NUM, num.getLine()));
             } else if (token.getTag() != Tag.NOTE) {
@@ -172,6 +674,7 @@ public class Parser {
     public DefaultMutableTreeNode getRoot() {
         return this.TreeList.get(0);
     }
+<<<<<<< HEAD
 
 
     /**
@@ -262,61 +765,18 @@ public class Parser {
             symbolStack.pop();
             state = statusStack.peek();//state永远指向栈顶
         }
+=======
+>>>>>>> 77ce851f06745275aa56082d9e0840d2dd0e8614
 
-        // 进行操作，看看是否含有非中介符。前一个set会保留交集，第二个set不变
-        nonTerminals.retainAll(lrtable.getGraph().get(state).keySet());
-        while (nonTerminals.isEmpty()) {
-            //当GOTO表中没有这个可去的状态时，也就是终结符交集是空,接着往前找
-            statusStack.pop();
-            symbolStack.pop();
-
-            if (statusStack.empty()) {
-                break;
-            }
-
-            state = statusStack.peek();
-            nonTerminals = lrtable.getNonTerminals();
-            nonTerminals.retainAll(lrtable.getGraph().get(state).keySet());
-        }
-
-        //到这里来，找到一个状态，他的非终结符集合交集不空了，
-        String A;
-        int nextState;
-        Map<String, Integer> map = lrtable.getGraph().get(state);
-        for (String s : nonTerminals) {
-            A = s;
-            int j = i;
-            nextState = map.get(A);
-            boolean isflag = false;
-
-            while (j < i + 3) {
-                statusStack.push(nextState);
-                symbolStack.push(new Symbol(A));
-                if (j >= tokens.size()) {
-                    return i;
-                }
-                if (followSetMap.get(A).contains(tokens.get(j))) {
-                    isflag = true;
-                    break;
-                } else {
-                    statusStack.pop();
-                    symbolStack.pop();
-                    j++;
-                }
-            }
-            if (isflag) {
-                i = i + (j - i) - 1;
-                break;
-            } else {
-                //这个不符合条件，就把刚才加进去的再出去.然后开启下次循环
-                statusStack.pop();
-                symbolStack.pop();
-            }
-        }
-        return i;
+    // 语法分析错误处理
+    // TODO 语义分析所做的一些修改使得原先错误处理代码不可用，此处为简单版本（仅打印错误之处），待完善
+    private void parserErrorHandle(int i) {
+        Token token = tokens.get(i);
+        System.out.println("Error at line: " + token.getLine() +
+                " [" + tokens.get(i).toString() + "]");
     }
 
     public static void main(String[] args) {
-        new Parser("test/right.txt");
+        new Parser("test/test.txt");
     }
 }

@@ -15,7 +15,7 @@ import java.util.Vector;
 public class Dfa extends JFrame {
     public Vector<Vector<String>> data = new Vector<>();
     public Vector<String> Title = new Vector<>();
-    private final Graph graph = new Graph("src/dfa.txt");
+    private final Graph graph = new Graph("src/lexer/dfa.txt");
     private final Set<Integer> State = new TreeSet<>();
 
     public Dfa() {
@@ -52,7 +52,7 @@ public class Dfa extends JFrame {
                         temp += "(" + graph.getEndStates().get(edge.getTarget()) + ")";
                     }
                     s[locataion] = temp;
-                    System.out.println(locataion + " " + s[locataion]);
+//                    System.out.println(locataion + " " + s[locataion]);
                 } else {
                     if (s[locataion] == null) {
                         s[locataion] = " ";

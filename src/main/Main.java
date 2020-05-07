@@ -1,16 +1,42 @@
 package main;
 
-import lexer.Lexer;
-import lexer.Row;
 
 public class Main {
     public static void main(String[] args) {
-//        String filename = "test/ex1.txt";
-//        Lexer lexer = new Lexer(filename);
-//        for (Row row : lexer.getLines()) {
-//            System.out.println(row.toString());
-//        }
-//        int a = Integer.valueOf("0x12");
-//        System.out.println(a);
+        String type = "int";
+        int width = 1;
+        switch (type) {
+            case "int":
+                width =  4;
+                break;
+            case "float":
+                width =  8;
+                break;
+            case "char":
+                width =  1;
+                break;
+            default:
+                for (String s : type.split(",\\s*")) {
+                    int temp = s.indexOf("(");
+                    if (temp != -1) {
+                        int tempWidth = Integer.parseInt(s.substring(temp + 1));
+                        width *= tempWidth;
+                    } else {
+                        String elemType = s.substring(0, s.indexOf(")"));
+                        switch (elemType) {
+                            case "int":
+                                width *= 4;
+                                break;
+                            case "float":
+                                width *= 8;
+                                break;
+                            case "char":
+                                width *= 1;
+                                break;
+                        }
+                    }
+                }
+        }
+        System.out.println(width);
     }
 }

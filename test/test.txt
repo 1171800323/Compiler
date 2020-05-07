@@ -1,12 +1,16 @@
-struct student{
-    int id ;
-    char name ;
-}
-
-char [2][3] string;
-
-proc int getSum(int x, int y){
-         int z;
-         z = x + y;
-         return z;
-}
+char [4][5] string;
+string[2][1] = 'a';
+int k;
+k = 0;
+k = 1 + 1;
+int p;
+p = k + 1;
+k = p + k + 2;
+int [2][3] stu;
+stu[1][2] = 1;
+int x;
+x = stu[1][2];
+int a;
+int b;
+int c;
+x = (a + b) * c;
