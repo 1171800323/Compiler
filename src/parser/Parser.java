@@ -1,14 +1,7 @@
 package parser;
 
-<<<<<<< HEAD
-import lexer.Lexer;
-import lexer.Num;
-import lexer.Tag;
-import lexer.Token;
-import syntax.SymbolItem;
-=======
+
 import lexer.*;
->>>>>>> 77ce851f06745275aa56082d9e0840d2dd0e8614
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.ArrayList;
@@ -32,11 +25,6 @@ public class Parser {
     // Token序列
     private final List<Token> tokens;
 
-<<<<<<< HEAD
-    //保存符号表
-    private List<SymbolItem> SymbolsTable = new ArrayList<>() ;
-
-=======
     // 符号表
     private final SymbolTable symbolTable = new SymbolTable();
     private int offset = 0;
@@ -53,7 +41,6 @@ public class Parser {
 
     // 错误信息
     private final SemanticErrorMessage semanticErrorMessage = new SemanticErrorMessage();
->>>>>>> 77ce851f06745275aa56082d9e0840d2dd0e8614
 
     public Parser(String filename) {
         // 初始化栈
@@ -66,36 +53,12 @@ public class Parser {
 
         // 语法分析和语义分析
         table = lrtable.getLrTable();
-<<<<<<< HEAD
-        lineno = lexer.getLineno();  //这一步是获得对应的行号
-        tokens = tokenChange(lexer.getTokens());  //获得解析后的tokens
-        //打印一下看一看
-        for(Token t : tokens){
-            System.out.println(t.getTag() +" "+t.getLine());
-        }
-=======
         handle();
->>>>>>> 77ce851f06745275aa56082d9e0840d2dd0e8614
 
         // 打印符号表
         System.out.println("符号表: ");
         System.out.println(symbolTable.toString());
 
-<<<<<<< HEAD
-        // 错误信息
-        for (String err : errorMessages) {
-            System.err.println("错误信息");
-            System.err.println(err);
-        }
-    }
-
-
-    /**
-     * 主要的reduce规约方法。
-     * @param tokens
-     */
-    private void handle(List<Token> tokens) {
-=======
         // 打印中间代码
         System.out.println("中间代码: ");
         System.out.println(codeList.toString());
@@ -107,7 +70,6 @@ public class Parser {
 
 
     private void handle() {
->>>>>>> 77ce851f06745275aa56082d9e0840d2dd0e8614
         // 一遍扫描
         for (int i = 0; i < tokens.size(); i++) {
             Token token = tokens.get(i);
@@ -167,15 +129,9 @@ public class Parser {
                     i--;
                 }
             } else {
-<<<<<<< HEAD
-
-                //语法分析错误处理
-                i = parserErrorHandle(token, i);
-
-=======
                 // 语法分析错误处理
                 // TODO 语义分析所做的一些修改使得原先错误处理代码不可用，此处遇到错误直接退出，待完善
-                parserErrorHandle(i);
+                parserErrorHandle( i );
                 break;
             }
         }
@@ -494,7 +450,6 @@ public class Parser {
                 F.putAttribute("addr", idLexeme);
                 symbolStack.push(F);
                 break;
->>>>>>> 77ce851f06745275aa56082d9e0840d2dd0e8614
             }
             case "F -> L": {
                 Symbol L = symbolStack.pop();
@@ -695,11 +650,7 @@ public class Parser {
 
 
     /**
-<<<<<<< HEAD
-     * 将词法分析获得的token，变成语法分析需要的形式token, 解析
-=======
      * 删除注释，将OCT和HEX转化为NUM，增加栈底符号
->>>>>>> 77ce851f06745275aa56082d9e0840d2dd0e8614
      */
     public List<Token> tokenChange(List<Token> tokens) {
         List<Token> list = new ArrayList<>();
@@ -744,101 +695,11 @@ public class Parser {
     public DefaultMutableTreeNode getRoot() {
         return this.TreeList.get(0);
     }
-<<<<<<< HEAD
 
 
     /**
-     *     语法分析阶段的错误处理
-      */
-    private int parserErrorHandle(String token, int i) {
-//        System.out.println(i);
-        if (i == tokens.size() - 1) {
-            errorMessages.add("Error at Line [" + "末尾" + "]:  '" + token + "' ");
-            return i;
-        }
-        //错误位置
-        int line1 = lineno.get(i - 1);
-        int line2 = lineno.get(i);
-        if (line1 == line2) {
-            errorMessages.add("Error at Line [" + line1 + "]:  '" + token + "' ");
-        } else if (line1 < line2) {
-            errorMessages.add("Error at Line [" + line1 + "~" + line2 + "]:  " + "  " + token);
-        }
-
-        // 赋值语句缺少分号
-        if (symbolStack.get(symbolStack.size() - 2).getName().equals("=") && (symbolStack.peek().getName().equals("id") || symbolStack.peek().getName().equals("real") ||
-                symbolStack.peek().getName().equals("num") || symbolStack.peek().getName().equals("character")) && line2 > line1) {
-//            tokens.add(i, ";");
-            tokens.add(i, new Token(Tag.SEMI, line1)) ;
-            lineno.add(i, line1);
-            i = i - 1;
-            return i;
-        }
-        // 重复
-        else if (symbolStack.peek().getName().equals(token) && !token.equals("(") && !token.equals(")") && !token.equals("{") && !token.equals("}")) {
-            tokens.remove(i);
-            lineno.remove(i);
-            i = i - 1;
-            return i;
-        }
-        // 缺少 if 后面左括号
-        else if (symbolStack.peek().getName().equals("if") && !token.equals("(")) {
-//            tokens.add(i, "(");
-            tokens.add(i,new Token(Tag.LS, line1)) ;
-            lineno.add(i, line1);
-            i = i - 1;
-            return i;
-        }
-        // 结构体缺少左大括号
-        else if (symbolStack.peek().getName().equals("id") && !token.equals("(") && symbolStack.get(symbolStack.size() - 2).getName().equals("struct")) {
-//            tokens.add(i, "{");
-            tokens.add(i,new Token(Tag.LB, line1)) ;
-            lineno.add(i, line1);
-            i = i - 1;
-            return i;
-        }
-        // 缺少右括号
-        Action action1 = table.getAction(statusStack.peek(), ")");
-        if (action1 != null && action1.getAction().equals(reduceSymbol)) {
-//            tokens.add(i, ")");
-            tokens.add(i,new Token(Tag.RS, line1)) ;
-            lineno.add(i, line1);
-            i = i - 1;
-            return i;
-        }
-        // 缺少右大括号
-        Action action2 = table.getAction(statusStack.peek(), "}");
-        if (action2 != null && action2.getAction().equals(reduceSymbol)) {
-//            tokens.add(i, "}");
-            tokens.add(i,new Token(Tag.RB, line1)) ;
-            lineno.add(i, line1);
-            i = i - 1;
-            return i;
-        }
-        // 缺少右中括号
-        Action action3 = table.getAction(statusStack.peek(), "]");
-        if (action3 != null && action3.getAction().equals(reduceSymbol)) {
-//            tokens.add(i, "]");
-            tokens.add(i,new Token(Tag.RM, line1)) ;
-            lineno.add(i, line1);
-            i = i - 1;
-            return i;
-        }
-
-        //如果不满足常见的几种错误
-        int state = statusStack.peek();
-        Set<String> nonTerminals = lrtable.getNonTerminals(); //非终结符集合
-
-        //如果是空，说明这个项集里面全是规约状态，接着往前找
-        if (lrtable.getGraph().get(state) == null) {
-            statusStack.pop();
-            symbolStack.pop();
-            state = statusStack.peek();//state永远指向栈顶
-        }
-=======
->>>>>>> 77ce851f06745275aa56082d9e0840d2dd0e8614
-
-    // 语法分析错误处理
+     *  语法分析 错误处理
+     */
     // TODO 语义分析所做的一些修改使得原先错误处理代码不可用，此处为简单版本（仅打印错误之处），待完善
     private void parserErrorHandle(int i) {
         Token token = tokens.get(i);
@@ -846,6 +707,10 @@ public class Parser {
                 " [" + tokens.get(i).toString() + "]");
     }
 
+    /**
+     * main
+     * @param args
+     */
     public static void main(String[] args) {
         new Parser("test/test.txt");
     }

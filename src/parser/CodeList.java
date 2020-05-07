@@ -5,11 +5,23 @@ import java.util.List;
 
 public class CodeList {
     private final List<IntermediateCode> codeList = new ArrayList<>();
+    private List<String> quaternions = new ArrayList<>();
     private int quad = 0;
 
     public CodeList() {
 
     }
+
+
+
+    // 返回所有三地址指令的四元式
+    public List<String> getQuaternions(){
+        for (int i = 0; i < codeList.size(); i++) {
+            quaternions.add(i+": "+codeList.get(i).getOneQuaternion()) ;
+        }
+        return quaternions ;
+    }
+
 
     public void addCode(String[] code) {
         IntermediateCode intermediateCode = new IntermediateCode(code);
