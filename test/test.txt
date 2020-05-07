@@ -1,5 +1,5 @@
-char [4][5] string;
-string[2][1] = 'a';
+char [4][5] str;
+str[2][1] = 'a';
 int k;
 k = 0;
 k = 1 + 1;
