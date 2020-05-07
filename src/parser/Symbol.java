@@ -24,6 +24,9 @@ public class Symbol {
     }
 
     public List<Integer> getList(String listType) {
+        if (listMap.get(listType) == null){
+            return new ArrayList<>();
+        }
         return new ArrayList<>(listMap.get(listType));
     }
 
@@ -31,9 +34,10 @@ public class Symbol {
         listMap.put(listType, new ArrayList<>(list));
     }
 
-    public void mergeList(String listType, List<Integer> list1, List<Integer> list2) {
+    public List<Integer> mergeList(String listType, List<Integer> list1, List<Integer> list2) {
         Set<Integer> sets = new HashSet<>(list1);
         sets.addAll(list2);
         listMap.put(listType, new ArrayList<>(sets));
+        return new ArrayList<>(sets);
     }
 }
