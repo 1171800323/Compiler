@@ -21,7 +21,7 @@ public class DrawLrTable extends JFrame{
 
         //构建表头
         Title.add("States");
-        LrTable lrtable = new LrTable("src/parser/grammar.txt");
+        LrTable lrtable = new LrTable("src/parser/grammar_semantic.txt");
         Table table1 = lrtable.getLrTable();
         Title.addAll(table1.getTableHead());
 

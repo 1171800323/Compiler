@@ -15,7 +15,8 @@ public enum Tag {
     ASSIGN("="), SEMI(";"), COMMA(","), DOT("."),
     LS("("), RS(")"),
     LM("["), RM("]"),
-    LB("{"), RB("}");
+    LB("{"), RB("}"),
+    STACK_BOTTOM("$");
 
     private String value;
 

@@ -1,27 +1,38 @@
 struct student{
     int id ;
-    char[10][20] name ;
+    char name ;
 }
-    name[0][1] = 'Y';
-    int a = 10;
-    a = x + y;
-    float f = 1e2;
-    bool flag = 1;
-    a = c;
-    int d = 0;
+    char [2][3] string;
+    string[0][1] = 'a';
+    string[0][2] = 'b';
+    char ch;
+    ch = string[0][1];
 
-    do
-        if (a == c) then
-                d = 1;
-            else
-                d = 2;
-    while (a < 20);
+    int a;
+    int b;
+    b = 1 + 2;
+    a = b * 2;
+    float c;
+    c = 1e2 + a;
+    int d;
+    d = 2;
+    float f;
+    f = 10.0;
 
-    float f = 10.0;
+    int x;
+    int y;
+    int z;
+    while (a < b)
+    do if (c < d) then
+          x = a + c;
+       else
+          x = a * c;
+
     /* 声明 */
-    proc int function(int x, int y){
-         y = x + 1;
-         return y;
+    proc int getSum(int x, int y){
+         int z;
+         z = x + y;
+         return z;
     }
     /* 调用 */
-    call function(a, d);
+    call Sum(a, d);

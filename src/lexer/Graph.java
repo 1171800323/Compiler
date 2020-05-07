@@ -24,7 +24,7 @@ public class Graph {
                 if(str.contains("keyword:")){
                     String[] key = str.substring(8).split(" ");
                     keyWords.addAll(Arrays.asList(key));
-                    System.out.println(keyWords.toString());
+//                    System.out.println(keyWords.toString());
                 }else if (str.contains("endstate:")) {
                     str = str.substring(9);
                     String[] endstate = str.split(" ");
@@ -51,7 +51,7 @@ public class Graph {
             e.printStackTrace();
         }
 
-        System.out.println(endStates);
+//        System.out.println(endStates);
 
     }
 
