@@ -3,7 +3,7 @@ package parser;
 
 import lexer.*;
 
-import javax.swing.plaf.synth.SynthOptionPaneUI;
+
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,6 +33,8 @@ public class Parser {
     // 中间代码
     private final CodeList codeList = new CodeList();
 
+    // 四元式序列
+    private  String quaternions ;
 
     // 记录临时变量t使用的数目
     private int tempCount = 1;
@@ -69,8 +71,9 @@ public class Parser {
         System.out.println(codeList.toString());
 
         // 打印四元式序列
+        quaternions = codeList.getQuaternions().toString() ;
         System.out.println("\n四元式序列: ");
-        System.out.println(codeList.getQuaternions());
+        System.out.println(quaternions);
 
 
         // 打印语义分析错误信息
@@ -107,6 +110,10 @@ public class Parser {
                     } else if (token.getTag() == Tag.ID) {
                         symbol.putAttribute("lexeme", ((Word) token).getLexeme());
                         symbol.putAttribute("lineNum", String.valueOf(token.getLine()));
+                    }
+                    if (symbolStack.peek().getName().equals("S")){
+                        Symbol S = symbolStack.peek();
+                        codeList.backPatch(S.getList("next"), String.valueOf(codeList.getQuad()));
                     }
                     symbolStack.push(symbol);
 
@@ -406,7 +413,7 @@ public class Parser {
 
                         codeList.addCode(new String[]{t, "=", eAddr, "*", String.valueOf(getLTypeWidth(lType))});
                     } else {
-                        semanticErrorMessage.add(idLineNum, "非数组类型变量使用了数组 " + idLexeme);
+                        semanticErrorMessage.add(idLineNum, "非数组类型变量使用了数组操作: " + idLexeme);
                     }
                 } else {
                     semanticErrorMessage.add(idLineNum, "未经声明就使用的变量 " + idLexeme);
@@ -418,11 +425,32 @@ public class Parser {
                 Symbol G = symbolStack.pop();
                 symbolStack.pop();
                 Symbol E1 = symbolStack.pop();
+
                 String e1Addr = E1.getAttribute("addr");
                 String gAddr = G.getAttribute("addr");
                 String t = newTemp();
                 Symbol E = new Symbol(production.getLeft());
                 E.putAttribute("addr", t);
+
+                if(E1.getAttribute("lineNum")!= null){
+                    E.putAttribute("lineNum",E1.getAttribute("lineNum"));
+                }
+                if(G.getAttribute("lineNum")!= null){
+                    E.putAttribute("lineNum",G.getAttribute("lineNum"));
+                }
+
+
+                if(E1.getAttribute("type").equals("char") || G.getAttribute("type").equals("char")){
+                    int idLineNum = 0 ;
+                    if( E1.getAttribute("lineNum")!= null ){
+                        idLineNum = getIntFromString(E1.getAttribute("lineNum")) ;
+                    }
+                    if( G.getAttribute("lineNum")!= null ){
+                        idLineNum = getIntFromString(G.getAttribute("lineNum")) ;
+                    }
+                    semanticErrorMessage.add(0, "运算符与运算分量不匹配: " +e1Addr +" "+"+"+" "+gAddr) ;
+                }
+
                 codeList.addCode(new String[]{t, "=", e1Addr, "+", gAddr});
                 symbolStack.push(E);
                 break;
@@ -432,6 +460,8 @@ public class Parser {
                 Symbol right = symbolStack.pop();
                 Symbol left = new Symbol(production.getLeft());
                 left.putAttribute("addr", right.getAttribute("addr"));
+                left.putAttribute("type",right.getAttribute("type"));
+                left.putAttribute("lineNum",right.getAttribute("lineNum"));
                 symbolStack.push(left);
                 break;
             }
@@ -442,9 +472,24 @@ public class Parser {
                 String t = newTemp();
                 Symbol G = new Symbol(production.getLeft());
                 G.putAttribute("addr", t);
+                if(G1.getAttribute("lineNum")!= null){
+                    G.putAttribute("lineNum",G1.getAttribute("lineNum"));
+                }
+                if(F.getAttribute("lineNum")!= null){
+                    G.putAttribute("lineNum",F.getAttribute("lineNum"));
+                }
+                if(G1.getAttribute("type").equals("char") || F.getAttribute("type").equals("char")
+                        || G1.getAttribute("type").contains("array") || F.getAttribute("type").contains("array")){
+                    int idLineNum = 0 ;
+                    if( G1.getAttribute("lineNum")!= null ){
+                        idLineNum = getIntFromString(G.getAttribute("lineNum")) ;
+                    }
+                    if( F.getAttribute("lineNum")!= null ){
+                        idLineNum = getIntFromString(F.getAttribute("lineNum")) ;
+                    }
+                    semanticErrorMessage.add(0, "运算符与运算分量不匹配: " +G1.getAttribute("addr") +" "+"*"+" "+F.getAttribute("addr")) ;
+                }
 
-//                System.err.println(F.getAttribute("type" ));
-//                System.err.println(G1.getAttribute("type" ));
 
                 codeList.addCode(new String[]{t, "=", G1.getAttribute("addr"), "*", F.getAttribute("addr")});
                 symbolStack.push(G);
@@ -456,6 +501,7 @@ public class Parser {
                 symbolStack.pop();
                 Symbol F = new Symbol(production.getLeft());
                 F.putAttribute("addr", E.getAttribute("addr"));
+                F.putAttribute("type", E.getAttribute("type"));
                 symbolStack.push(F);
                 break;
             }
@@ -466,6 +512,16 @@ public class Parser {
                 String val = num.getAttribute("value");
                 Symbol F = new Symbol(production.getLeft());
                 F.putAttribute("addr", val);
+                String type = production.getRight().get(0);
+                if(type.equals("num")){
+                    F.putAttribute("type","int");
+                }
+                else if(type.equals("real")) {
+                    F.putAttribute("type","float");
+                }
+                else if(type.equals("character")) {
+                    F.putAttribute("type","char");
+                }
                 symbolStack.push(F);
                 break;
             }
@@ -478,6 +534,8 @@ public class Parser {
                     semanticErrorMessage.add(idLineNum, "未经声明就使用的变量 " + idLexeme);
                 }
                 F.putAttribute("addr", idLexeme);
+                F.putAttribute("type",symbolTable.getType(id.getName()));
+                F.putAttribute("lineNum",id.getAttribute("lineNum"));
                 symbolStack.push(F);
                 break;
             }
@@ -533,6 +591,7 @@ public class Parser {
                 List<Integer> temp = S.mergeList("next", S1.getList("next")
                         , N.getList("next"));
                 S.mergeList("next", temp, S2.getList("next"));
+
                 symbolStack.push(S);
                 break;
             }
@@ -589,6 +648,7 @@ public class Parser {
                 }
                 if( symbolTable.isIdExisted(id.getAttribute("lexeme")) ){
                     codeList.addCode(new String[]{"call", id.getAttribute("lexeme"), ",", String.valueOf(n)});
+
                 }
                 else {
                     int idLineNum = getIntFromString(id.getAttribute("lineNum"));
@@ -814,10 +874,24 @@ public class Parser {
                 " [" + tokens.get(i).toString() + "]");
     }
 
-    /**
-     * main
-     * @param args
-     */
+
+    public String getCodeList() {
+        return codeList.toString();
+    }
+
+    public String getSemanticErrorMessage() {
+        return semanticErrorMessage.toString();
+    }
+
+    public String getSymbolTable() {
+        return symbolTable.toString();
+    }
+
+    public String getQuaternions(){
+        return quaternions ;
+    }
+
+
     public static void main(String[] args) {
         new Parser("test/test.txt");
     }

@@ -9,13 +9,14 @@ public class Gui {
     private final JFrame jFrame;      // frame窗体
     private final TextArea textArea;  // 文字区
 
-    private final JMenuItem openItem;
+    private final JMenuItem openItem;  // 二级菜单项
     private final JMenuItem saveItem;
     private final JMenuItem exitItem;
     private final JMenuItem dfaItem;
     private final JMenuItem tokenItem;
     private final JMenuItem lrTableItem;
-    private final JMenuItem syntax_treeItem; // 二级菜单项
+    private final JMenuItem syntax_treeItem;
+    private final JMenuItem semanticItem;
 
     private FileDialog openDialog;
     private File file = null;                       // 打开的文件
@@ -46,9 +47,10 @@ public class Gui {
 
         // 创建菜单项menu
         JMenu fileMenu = new JMenu("File");
-        JMenu lexerMenu = new JMenu("Lexer");
         // 一级菜单项
+        JMenu lexerMenu = new JMenu("Lexer");
         JMenu parserMenu = new JMenu("Parser");
+        JMenu semanticMenu = new JMenu("Semantic");
 
         // 为"File"菜单项设置"Open","Save","Exit"按钮
         openItem = new JMenuItem("Open");
@@ -77,16 +79,22 @@ public class Gui {
         //为"Parser"菜单设置按钮
         lrTableItem = new JMenuItem("LrTable");
         syntax_treeItem = new JMenuItem("SyntaxTree");
-        
+
         //为"Parser"设置监听
         parserMenuEvent();
         parserMenu.add(lrTableItem);
         parserMenu.add(syntax_treeItem);
 
+        // 语义分析
+        semanticItem = new JMenuItem("Semantic");
+        semanticMenuEvent();
+        semanticMenu.add(semanticItem);
+
         // 添加菜单项到menubar
         menuBar.add(fileMenu);
         menuBar.add(lexerMenu);
         menuBar.add(parserMenu);
+        menuBar.add(semanticMenu);
 
         // 添加menubar到frame
         jFrame.setJMenuBar(menuBar);
@@ -109,9 +117,13 @@ public class Gui {
     private void parserMenuEvent() {
         //打印输出LR(1)分析表
         lrTableItem.addActionListener(e -> new DrawLrTable());
-        
+
         //打印输出语法树
         syntax_treeItem.addActionListener(e -> new DrawSyntaxTree(file.getAbsolutePath()));
+    }
+
+    private void semanticMenuEvent() {
+        semanticItem.addActionListener(e -> new SemanticMessage(file.getAbsolutePath()));
     }
 
     private void fileMenuEvent() {

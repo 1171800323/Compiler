@@ -2,13 +2,19 @@ struct student{
     int id ;
     char name ;
 }
-int [2][3] array;
-array[0][2] = 2;
-int temp;
+struct student{
+}
 
+int [2][3] array;
+array[0][1.1] = 2;
+int temp;
 temp = array[0][1];
 
 int a;
+int b ;
+a = 5 * 'c' ;
+a[2] = 6 ;
+g = 5;
 a = 0xf;
 int b;
 int c;
@@ -16,9 +22,6 @@ int d;
 int x;
 int y;
 int z;
-
-int j ;
- j = b * c ;
 
 while (a < b)
 do if (c < 5) then
@@ -39,4 +42,15 @@ proc int getSum(int elem1, int elem2){
 
 call getSum(a,b);
 
+int e;
+int f;
+call f() ;
+if(a < b || c < d && e < f) then
+    x = a;
+else
+    x = b;
 
+a = 5;
+
+proc int getSum(int elem3, int elem4){
+}

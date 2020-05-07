@@ -2,36 +2,40 @@ struct student{
     int id ;
     char name ;
 }
-    char [2][3] string;
-    string[1][1] = 'a';
-    string[0][2] = 'b';
-    char ch;
-    ch = string[1][1];
+int [2][3] array;
+array[0][1] = 2;
+int temp;
+temp = array[0][1];
 
-    int a;
-    int b;
-    int c;
-    int d;
-    b = 1 + 2;
-    a = b * 2;
-    c = 1e2 + a;
-    d = 1;
+int a;
+a = 0xf;
+int b;
+int c;
+int d;
+int x;
+int y;
+int z;
 
-    while (a < b)
-    do if (c < d) then
-          d = a + b;
-       else
-          d = a * b;
+while (a < b)
+do if (c < 5) then
+   while (x > y) do z = x + 1;
+else
+   x = y;
+a = 1;
+if (a > b) then
+    x = a;
+else
+    x = b;
 
-    float f;
-    f = 10.0;
-    f = a + f;
-
-    /* 声明 */
-    proc int getSum(int x, int y){
-         int z;
-         z = x + y;
-         return z;
-    }
-    /* 调用 */
-    call Sum(a, d);
+proc int getSum(int elem1, int elem2){
+         int sum;
+         sum = elem1 + elem2;
+         return sum;
+}
+call getSum(a,b);
+int e;
+int f;
+if(a < b || c < d && e < f) then
+    x = a;
+else
+    x = b;
