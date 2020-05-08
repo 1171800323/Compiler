@@ -40,17 +40,17 @@ proc int getSum(int elem1, int elem2){
          return sum;
 }
 
-call getSum(a,b);
-
 int e;
 int f;
-call f() ;
+
 if(a < b || c < d && e < f) then
     x = a;
 else
     x = b;
-
 a = 5;
 
 proc int getSum(int elem3, int elem4){
 }
+
+call getsum(a,b) ;
+call f( a ,b) ;

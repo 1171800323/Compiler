@@ -103,10 +103,13 @@ public class Parser {
                     Symbol symbol = new Symbol(grammarSymbol);
                     if (token.getTag() == Tag.NUM) {
                         symbol.putAttribute("value", String.valueOf(((Num) token).getValue()));
+                        symbol.putAttribute("lineNum", String.valueOf(token.getLine()));
                     } else if (token.getTag() == Tag.REAL) {
                         symbol.putAttribute("value", String.valueOf(((Real) token).getValue()));
+                        symbol.putAttribute("lineNum", String.valueOf(token.getLine()));
                     } else if (token.getTag() == Tag.CHARACTER) {
                         symbol.putAttribute("value", ((Word) token).getLexeme());
+                        symbol.putAttribute("lineNum", String.valueOf(token.getLine()));
                     } else if (token.getTag() == Tag.ID) {
                         symbol.putAttribute("lexeme", ((Word) token).getLexeme());
                         symbol.putAttribute("lineNum", String.valueOf(token.getLine()));
@@ -227,7 +230,7 @@ public class Parser {
                 String tType = T.getAttribute("type");
                 int tWidth = getIntFromString(T.getAttribute("width"));
                 if (symbolTable.isIdExisted(idLexeme)) {
-                    semanticErrorMessage.add(idLineNum, "重复声明的变量名 " + idLexeme);
+                    semanticErrorMessage.add(idLineNum, "重复声明的变量名: " + idLexeme);
                 } else {
                     symbolTable.put(idLexeme, new SymbolItem(idLexeme, tType, offset, idLineNum));
                     offset += tWidth;
@@ -323,7 +326,7 @@ public class Parser {
                 int xWidth = getIntFromString(X.getAttribute("width"));
                 int lineNum = getIntFromString(id.getAttribute("lineNum"));
                 if (symbolTable.isIdExisted(idLexeme)) {
-                    semanticErrorMessage.add(lineNum, "重复声明的变量名 " + idLexeme);
+                    semanticErrorMessage.add(lineNum, "重复声明的变量名: " + idLexeme);
                 } else {
                     symbolTable.put(idLexeme, new SymbolItem(idLexeme, xType, offset, lineNum));
                     offset += xWidth;
@@ -342,7 +345,7 @@ public class Parser {
                 int xWidth = getIntFromString(X.getAttribute("width"));
                 int lineNum = getIntFromString(id.getAttribute("lineNum"));
                 if (symbolTable.isIdExisted(idLexeme)) {
-                    semanticErrorMessage.add(lineNum, "重复声明的变量名 " + idLexeme);
+                    semanticErrorMessage.add(lineNum, "重复声明的变量名: " + idLexeme);
                 } else {
                     symbolTable.put(idLexeme, new SymbolItem(idLexeme, xType, offset, lineNum));
                     offset += xWidth;
@@ -416,7 +419,7 @@ public class Parser {
                         semanticErrorMessage.add(idLineNum, "非数组类型变量使用了数组操作: " + idLexeme);
                     }
                 } else {
-                    semanticErrorMessage.add(idLineNum, "未经声明就使用的变量 " + idLexeme);
+                    semanticErrorMessage.add(idLineNum, "未经声明就使用的变量: " + idLexeme);
                 }
                 symbolStack.push(L);
                 break;
@@ -431,16 +434,10 @@ public class Parser {
                 String t = newTemp();
                 Symbol E = new Symbol(production.getLeft());
                 E.putAttribute("addr", t);
-
-                if(E1.getAttribute("lineNum")!= null){
-                    E.putAttribute("lineNum",E1.getAttribute("lineNum"));
-                }
-                if(G.getAttribute("lineNum")!= null){
-                    E.putAttribute("lineNum",G.getAttribute("lineNum"));
-                }
-
-
-                if(E1.getAttribute("type").equals("char") || G.getAttribute("type").equals("char")){
+                //类型不匹配
+                if( !E1.getAttribute("type").equals(G.getAttribute("type"))
+                        || E1.getAttribute("type").contains("array") || G.getAttribute("type").contains("array")
+                        || E1.getAttribute("type").contains("proc") || G.getAttribute("type").contains("proc")){
                     int idLineNum = 0 ;
                     if( E1.getAttribute("lineNum")!= null ){
                         idLineNum = getIntFromString(E1.getAttribute("lineNum")) ;
@@ -448,7 +445,10 @@ public class Parser {
                     if( G.getAttribute("lineNum")!= null ){
                         idLineNum = getIntFromString(G.getAttribute("lineNum")) ;
                     }
-                    semanticErrorMessage.add(0, "运算符与运算分量不匹配: " +e1Addr +" "+"+"+" "+gAddr) ;
+                    semanticErrorMessage.add(idLineNum, "运算符与运算分量不匹配: " +e1Addr +" "+"+"+" "+gAddr) ;
+                }
+                else {
+                    E.putAttribute("lineNum", E1.getAttribute("lineNum"));
                 }
 
                 codeList.addCode(new String[]{t, "=", e1Addr, "+", gAddr});
@@ -472,28 +472,26 @@ public class Parser {
                 String t = newTemp();
                 Symbol G = new Symbol(production.getLeft());
                 G.putAttribute("addr", t);
-                if(G1.getAttribute("lineNum")!= null){
-                    G.putAttribute("lineNum",G1.getAttribute("lineNum"));
-                }
-                if(F.getAttribute("lineNum")!= null){
-                    G.putAttribute("lineNum",F.getAttribute("lineNum"));
-                }
-                if(G1.getAttribute("type").equals("char") || F.getAttribute("type").equals("char")
-                        || G1.getAttribute("type").contains("array") || F.getAttribute("type").contains("array")){
+
+                if( !G1.getAttribute("type").equals(F.getAttribute("type"))
+                        || G1.getAttribute("type").contains("array") || F.getAttribute("type").contains("array")
+                        || G1.getAttribute("type").contains("proc") || F.getAttribute("type").contains("proc")){
                     int idLineNum = 0 ;
                     if( G1.getAttribute("lineNum")!= null ){
-                        idLineNum = getIntFromString(G.getAttribute("lineNum")) ;
+                        idLineNum = getIntFromString(G1.getAttribute("lineNum")) ;
                     }
                     if( F.getAttribute("lineNum")!= null ){
                         idLineNum = getIntFromString(F.getAttribute("lineNum")) ;
                     }
-                    semanticErrorMessage.add(0, "运算符与运算分量不匹配: " +G1.getAttribute("addr") +" "+"*"+" "+F.getAttribute("addr")) ;
+                    semanticErrorMessage.add(idLineNum, "运算符与运算分量不匹配: " +G1.getAttribute("addr") +" "+"*"+" "+F.getAttribute("addr")) ;
                 }
-
-
+                else {
+                    G .putAttribute("lineNum",G1.getAttribute("type"));
+                }
                 codeList.addCode(new String[]{t, "=", G1.getAttribute("addr"), "*", F.getAttribute("addr")});
                 symbolStack.push(G);
                 break;
+
             }
             case "F -> ( E )": {
                 symbolStack.pop();
@@ -513,14 +511,18 @@ public class Parser {
                 Symbol F = new Symbol(production.getLeft());
                 F.putAttribute("addr", val);
                 String type = production.getRight().get(0);
+
                 if(type.equals("num")){
                     F.putAttribute("type","int");
+                    F.putAttribute("lineNum",num.getAttribute("lineNum"));
                 }
                 else if(type.equals("real")) {
                     F.putAttribute("type","float");
+                    F.putAttribute("lineNum",num.getAttribute("lineNum"));
                 }
                 else if(type.equals("character")) {
                     F.putAttribute("type","char");
+                    F.putAttribute("lineNum",num.getAttribute("lineNum"));
                 }
                 symbolStack.push(F);
                 break;
@@ -531,7 +533,7 @@ public class Parser {
                 int idLineNum = getIntFromString(id.getAttribute("lineNum"));
                 Symbol F = new Symbol(production.getLeft());
                 if (!symbolTable.isIdExisted(idLexeme)) {
-                    semanticErrorMessage.add(idLineNum, "未经声明就使用的变量 " + idLexeme);
+                    semanticErrorMessage.add(idLineNum, "未经声明就使用的变量: " + idLexeme);
                 }
                 F.putAttribute("addr", idLexeme);
                 F.putAttribute("type",symbolTable.getType(id.getName()));
@@ -568,7 +570,7 @@ public class Parser {
                 if (symbolTable.isIdExisted(idLexeme)) {
                     codeList.addCode(new String[]{idLexeme, "=", E.getAttribute("addr")});
                 } else {
-                    semanticErrorMessage.add(idLineNum, "未经声明就使用的变量 " + idLexeme);
+                    semanticErrorMessage.add(idLineNum, "未经声明就使用的变量: " + idLexeme);
                 }
                 symbolStack.push(new Symbol(production.getLeft()));
                 break;
@@ -635,24 +637,35 @@ public class Parser {
             case "S -> call id ( Elist ) ;": {
                 symbolStack.pop();
                 symbolStack.pop();
-                symbolStack.pop();
+                Symbol Elist = symbolStack.pop();
                 symbolStack.pop();
                 Symbol id = symbolStack.pop();
                 symbolStack.pop();
                 Symbol S = new Symbol(production.getLeft());
                 symbolStack.push(S);
                 int n = 0;
+                String  size = Elist.getAttribute("size") ;
+                String name = id.getAttribute("lexeme") ;
+                
                 for (String t : callParams) {
                     codeList.addCode(new String[]{"param", t});
                     n = n + 1;
                 }
-                if( symbolTable.isIdExisted(id.getAttribute("lexeme")) ){
-                    codeList.addCode(new String[]{"call", id.getAttribute("lexeme"), ",", String.valueOf(n)});
+
+                if( symbolTable.isIdExisted(name) ){
+                    if(symbolTable.getType(name).equals("proc")){
+                        codeList.addCode(new String[]{"call", id.getAttribute("lexeme"), ",", String.valueOf(n)});
+                    }
+                    else {
+                        int idLineNum = getIntFromString(id.getAttribute("lineNum"));
+                        semanticErrorMessage.add(  idLineNum ,"对普通变量使用了过程调用操作符: " + name);
+                    }
+
 
                 }
                 else {
                     int idLineNum = getIntFromString(id.getAttribute("lineNum"));
-                    semanticErrorMessage.add(  idLineNum ,"对普通变量使用了过程调用操作符");
+                    semanticErrorMessage.add(  idLineNum ,"未声明的函数名： "+ name );
                 }
                 break;
             }

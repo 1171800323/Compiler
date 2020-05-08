@@ -25,6 +25,9 @@ public class SymbolTable {
         return symbolItemMap.get(id).getType();
     }
 
+
+
+
     @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
