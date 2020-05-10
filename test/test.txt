@@ -1,14 +1,56 @@
+struct student{
+    int id ;
+    char name ;
+}
+struct student{
+}
+
+int [2][3] array;
+array[0][1.1] = 2;
+int temp;
+temp = array[0][1];
+
 int a;
+int b ;
+a = 5 * 'c' ;
+a[2] = 6 ;
+g = 5;
 a = 0xf;
 int b;
 int c;
 int d;
+int x;
+int y;
+int z;
+
+while (a < b)
+do if (c < 5) then
+   while (x > y) do z = x + 1;
+else
+   x = y;
+a = 1;
+if (a > b) then
+    x = a;
+else
+    x = b;
+
+proc int getSum(int elem1, int elem2){
+         int sum;
+         sum = elem1 + elem2;
+         return sum;
+}
+
+call getSum(a,b);
+
 int e;
 int f;
-int x;
-while (a < b) do
-    if(a < b) then
-        x = a;
-    else
-        x = b;
-c = 1;
+call f() ;
+if(a < b || c < d && e < f) then
+    x = a;
+else
+    x = b;
+
+a = 5;
+
+proc int getSum(int elem3, int elem4){
+}

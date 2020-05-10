@@ -31,6 +31,7 @@ public class LrTable {
     // 左部和对应的产生式集合
     private final Map<String, Set<Production>> productionMap = new HashMap<>();
 
+
     public LrTable(String filename) {
         try (FileInputStream inputStream = new FileInputStream(filename);
              BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
