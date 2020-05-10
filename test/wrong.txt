@@ -2,15 +2,19 @@ struct student{
     int id ;
     char name ;
 }
+struct student{
+}
 
 int [2][3] array;
-array[0][1] = 2;
+array[0][1.88] = 2;
 int temp;
 temp = array[0][1];
 
 int a;
-
-a = id + name ;
+int b ;
+a = 5 * 'c' ;
+a[2] = 6 ;
+g = 5;
 a = 0xf;
 int b;
 int c;
@@ -35,10 +39,18 @@ proc int getSum(int elem1, int elem2){
          sum = elem1 + elem2;
          return sum;
 }
-call getSum(a,b);
+
 int e;
 int f;
+
 if(a < b || c < d && e < f) then
     x = a;
 else
     x = b;
+a = 5;
+
+proc int getSum(int elem3, int elem4){
+}
+
+call getsum(a,b) ;
+call f( a ,b) ;
