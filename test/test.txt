@@ -9,7 +9,6 @@ int temp;
 temp = array[0][1];
 
 int a;
-a = 0xf;
 int b;  int c;  int d;
 int e;  int f;
 int x;  int y;  int z;
@@ -24,7 +23,7 @@ while (a < b)
         x = y;
 
 a = 1 ;
-if(a < b || c < d && e < f) then
+if(a < b) then
     x = a;
 else
     x = b;
