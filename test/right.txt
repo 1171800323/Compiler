@@ -39,3 +39,4 @@ if(a < b || c < d && e < f) then
     x = a;
 else
     x = b;
+x = 1;
