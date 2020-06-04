@@ -1,10 +1,6 @@
----
-typora-root-url: https://github.com/1171800323/Compiler.git/master/pic
----
-
 # 词法分析
 
-<img src="/image-20200604084211204.png" alt="image-20200604084211204" style="zoom:80%;" />
+<img src="https://github.com/1171800323/Compiler/blob/master/pic/image-20200604083038592.png" alt="image-20200604084211204" style="zoom:80%;" />
 
 <img src="/image-20200604083721784.png" alt="image-20200604083721784" style="zoom:80%;" />
 
