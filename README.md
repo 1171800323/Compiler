@@ -1,24 +1,23 @@
 # 词法分析
+<img src="https://github.com/1171800323/Compiler/blob/master/pic/image-20200604084211204.png" alt="image-20200604084211204" style="zoom:50%;" />
 
-<img src="https://github.com/1171800323/Compiler/blob/master/pic/image-20200604083038592.png" alt="image-20200604084211204" style="zoom:80%;" />
+<img src="https://github.com/1171800323/Compiler/blob/master/pic/image-20200604083038592.png" alt="image-20200604084211204" style="zoom:50%;" />
 
-<img src="https://github.com/1171800323/Compiler/blob/master/pic/image-20200604083721784.png" alt="image-20200604083721784" style="zoom:80%;" />
+<img src="https://github.com/1171800323/Compiler/blob/master/pic/image-20200604083721784.png" alt="image-20200604083721784" style="zoom:50%;" />
 
-<img src="https://github.com/1171800323/Compiler/blob/master/pic/image-20200604083917425.png" alt="image-20200604083917425" style="zoom:80%;" />
+<img src="https://github.com/1171800323/Compiler/blob/master/pic/image-20200604083917425.png" alt="image-20200604083917425" style="zoom:50%;" />
 
-<img src="https://github.com/1171800323/Compiler/blob/master/pic/image-20200604084456456.png" alt="image-20200604084456456" style="zoom:80%;" />
+<img src="https://github.com/1171800323/Compiler/blob/master/pic/image-20200604084456456.png" alt="image-20200604084456456" style="zoom:50%;" />
 
+<img src="https://github.com/1171800323/Compiler/blob/master/pic/image-20200604083058614.png" alt="image-20200604083058614" style="zoom: 50%;" />
 
-
-<img src="https://github.com/1171800323/Compiler/blob/master/pic/image-20200604083058614.png" alt="image-20200604083058614" style="zoom: 80%;" />
-
-<img src="https://github.com/1171800323/Compiler/blob/master/pic/image-20200604083127419.png" alt="image-20200604083127419" style="zoom: 80%;" />
+<img src="https://github.com/1171800323/Compiler/blob/master/pic/image-20200604083127419.png" alt="image-20200604083127419" style="zoom: 50%;" />
 
 
 
 # 语法分析
 
-<img src="https://github.com/1171800323/Compiler/blob/master/pic/image-20200604084236850.png" alt="image-20200604084236850" style="zoom:80%;" />
+<img src="https://github.com/1171800323/Compiler/blob/master/pic/image-20200604084236850.png" alt="image-20200604084236850" style="zoom:50%;" />
 
 ﻿Program -> P
 P -> D P 丨 S P 丨 ε
@@ -39,13 +38,13 @@ I -> ! I 丨 ( B ) 丨 E relop E 丨 true 丨 false
 relop -> < 丨 > 丨 <= 丨 >= 丨 != 丨 ==
 Elist -> Elist , E 丨 E
 
-<img src="https://github.com/1171800323/Compiler/blob/master/pic/image-20200604083414135.png" alt="image-20200604083414135" style="zoom:80%;" />
+<img src="https://github.com/1171800323/Compiler/blob/master/pic/image-20200604083414135.png" alt="image-20200604083414135" style="zoom:50%;" />
 
-<img src="https://github.com/1171800323/Compiler/blob/master/pic/image-20200604083451427.png" alt="image-20200604083451427" style="zoom:80%;" />
+<img src="https://github.com/1171800323/Compiler/blob/master/pic/image-20200604083451427.png" alt="image-20200604083451427" style="zoom:50%;" />
 
 # 语义分析
 
-<img src="https://github.com/1171800323/Compiler/blob/master/pic/image-20200604084255674.png" alt="image-20200604084255674" style="zoom:80%;" />
+<img src="https://github.com/1171800323/Compiler/blob/master/pic/image-20200604084255674.png" alt="image-20200604084255674" style="zoom:50%;" />
 
 Program -> P
 P -> D P 丨 S P 丨 ε
@@ -70,7 +69,7 @@ I -> ! I 丨 ( B ) 丨 E relop E 丨 true 丨 false
 relop -> < 丨 > 丨 <= 丨 >= 丨 != 丨 ==
 Elist -> Elist , E 丨 E
 
-<img src="https://github.com/1171800323/Compiler/blob/master/pic/image-20200604083526500.png" alt="image-20200604083526500" style="zoom:80%;" />
+<img src="https://github.com/1171800323/Compiler/blob/master/pic/image-20200604083526500.png" alt="image-20200604083526500" style="zoom:50%;" />
 
 
 
