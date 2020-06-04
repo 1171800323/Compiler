@@ -1,5 +1,5 @@
 ---
-typora-root-url: pic
+typora-root-url: https://github.com/1171800323/Compiler.git/master/pic
 ---
 
 # 词法分析
